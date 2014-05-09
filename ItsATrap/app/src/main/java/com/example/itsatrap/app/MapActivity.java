@@ -1,8 +1,12 @@
 package com.example.itsatrap.app;
 
 import android.app.Activity;
+import android.content.Context;
+import android.location.Criteria;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
+import android.location.Location;
+import android.location.LocationManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
@@ -28,19 +32,26 @@ public class MapActivity extends Activity {
 
         // Set the adapter for the list view
         drawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, R.id.drawer_text_view, drawerEntries));
-//        // Get a handle to the Map Fragment
-//        GoogleMap map = ((MapFragment) getFragmentManager()
-//                .findFragmentById(R.id.map)).getMap();
-//
-//        LatLng sydney = new LatLng(-33.867, 151.206);
-//
-//        map.setMyLocationEnabled(true);
-//        map.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 13));
-//
-//        map.addMarker(new MarkerOptions()
-//                .title("Sydney")
-//                .snippet("The most populous city in Australia.")
-//                .position(sydney));
+        // Get a handle to the Map Fragment
+        GoogleMap map = ((MapFragment) getFragmentManager()
+                .findFragmentById(R.id.map)).getMap();
+
+        if  (map != null)
+        {
+            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+            Location curLocation = locationManager.getLastKnownLocation(locationManager.getBestProvider(new Criteria(), true));
+
+            LatLng curLoc = new LatLng(curLocation.getLatitude(), curLocation.getLongitude());
+
+            map.setMyLocationEnabled(true);
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(curLoc, 13));
+
+    //        map.addMarker(new MarkerOptions()
+    //                .title("Sydney")
+    //                .snippet("The most populous city in Australia.")
+    //                .position(sydney));
+        }
     }
 
 
