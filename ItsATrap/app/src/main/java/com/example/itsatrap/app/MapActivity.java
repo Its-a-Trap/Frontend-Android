@@ -15,11 +15,13 @@ import android.widget.ListView;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
 
-public class MapActivity extends Activity {
+public class MapActivity extends Activity implements GoogleMap.OnMapClickListener {
 
     private String[] drawerEntries;
     private DrawerLayout drawerLayout;
     private ListView drawerList;
+    private GoogleMap map;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,7 +35,7 @@ public class MapActivity extends Activity {
         // Set the adapter for the list view
         drawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, R.id.drawer_text_view, drawerEntries));
         // Get a handle to the Map Fragment
-        GoogleMap map = ((MapFragment) getFragmentManager()
+        map = ((MapFragment) getFragmentManager()
                 .findFragmentById(R.id.map)).getMap();
 
         if  (map != null)
@@ -47,10 +49,8 @@ public class MapActivity extends Activity {
             map.setMyLocationEnabled(true);
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(curLoc, 13));
 
-    //        map.addMarker(new MarkerOptions()
-    //                .title("Sydney")
-    //                .snippet("The most populous city in Australia.")
-    //                .position(sydney));
+            //Set the listener
+            map.setOnMapClickListener(this);
         }
     }
 
@@ -75,4 +75,8 @@ public class MapActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onMapClick(LatLng latLng) {
+        map.addMarker(new MarkerOptions().position(latLng).title("It's a trap!"));
+    }
 }
