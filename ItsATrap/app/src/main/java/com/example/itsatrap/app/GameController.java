@@ -8,6 +8,8 @@ import android.location.LocationManager;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -121,13 +123,19 @@ public class GameController {
     private void getHighScoresAndEnemyMinesFromServer(LatLng curLoc)
     {
         //Server magic goes here
+        PlayerInfo[] hardCodedEntries = {new PlayerInfo("Jeff", 9001) , new PlayerInfo("DSM", 6), new PlayerInfo("Calder", 6), new PlayerInfo("Carissa", 6), new PlayerInfo("DermDerm", 5), new PlayerInfo("Tao", 5), new PlayerInfo("Carlton", 5), new PlayerInfo("Quinn", 5)};
+        highScores = Arrays.asList(hardCodedEntries);
+        enemyPlantables = new ArrayList<Plantable>();
     }
 
     //Stub
     private List<Plantable> getMyMinesFromServer()
     {
         //Server magic goes here
-        return new ArrayList<Plantable>();
+        ArrayList<Plantable> toReturn = new ArrayList<Plantable>();
+        toReturn.add(new Plantable(0, 3, new LatLng(44.456799, -93.156410), new Date(), 100, 15));
+        toReturn.add(new Plantable(1, 3, new LatLng(44.459832, -93.151389), new Date(), 100, 15));
+        return toReturn;
     }
 
 }
