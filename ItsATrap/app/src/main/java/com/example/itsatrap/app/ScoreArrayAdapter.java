@@ -38,7 +38,6 @@ public class ScoreArrayAdapter extends ArrayAdapter<PlayerInfo> {
         }
 
         ((TextView)row.findViewById(R.id.drawer_name_text)).setText(objects.get(position).getName());
-        View temp = row.findViewById(R.id.drawer_score_text);
         ((TextView)row.findViewById(R.id.drawer_score_text)).setText(Integer.toString(objects.get(position).getScore()));
 
         return row;
