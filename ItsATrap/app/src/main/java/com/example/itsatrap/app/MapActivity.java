@@ -15,9 +15,14 @@ import android.widget.ListView;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class MapActivity extends Activity implements GoogleMap.OnMapClickListener {
 
-    private String[] drawerEntries;
+    private List<PlayerInfo> drawerEntries;
     private DrawerLayout drawerLayout;
     private ListView drawerList;
     private GoogleMap map;
@@ -27,13 +32,13 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
-        String[] hardCodedEntries = {"Jeff", "DSM", "Calder", "Carissa", "DermDerm", "Tao", "Carlton", "Quinn"};
-        drawerEntries = hardCodedEntries;
+        PlayerInfo[] hardCodedEntries = {new PlayerInfo("Jeff", 9001) , new PlayerInfo("DSM", 6), new PlayerInfo("Calder", 6), new PlayerInfo("Carissa", 6), new PlayerInfo("DermDerm", 5), new PlayerInfo("Tao", 5), new PlayerInfo("Carlton", 5), new PlayerInfo("Quinn", 5)};
+        drawerEntries = Arrays.asList(hardCodedEntries);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawerList = (ListView) findViewById(R.id.left_drawer);
 
         // Set the adapter for the list view
-        drawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, R.id.drawer_text_view, drawerEntries));
+        drawerList.setAdapter(new ScoreArrayAdapter(this, R.layout.drawer_list_item, drawerEntries));
         // Get a handle to the Map Fragment
         map = ((MapFragment) getFragmentManager()
                 .findFragmentById(R.id.map)).getMap();
