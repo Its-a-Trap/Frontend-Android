@@ -7,11 +7,29 @@
     android:layout_height="match_parent">
 
     <!-- Main content view (map> -->
+    <!--<FrameLayout-->
+        <!--xmlns:android="http://schemas/android.com/apk/res/android"-->
+        <!--android:layout_width="fill_parent"-->
+        <!--android:layout_height="fill_parent">-->
+
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/map"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:name="com.google.android.gms.maps.MapFragment"/>
+
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" >
+
+        <Button android:id="@+id/sweep_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="SWEEP"
+            android:onClick="sweep" />
+    </FrameLayout>
+
+    <!--</FrameLayout>-->
 
     <!-- The navigation drawer -->
     <ListView android:id="@+id/left_drawer"
