@@ -21,17 +21,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MapActivity extends Activity implements GoogleMap.OnMapClickListener {
+public class MapActivity extends Activity implements GoogleMap.OnMapClickListener, GoogleMap.OnInfoWindowClickListener {
 
     private DrawerLayout drawerLayout;
     private ListView drawerList;
     private GoogleMap map;
     private GameController gameController;
+    private Marker plantableToPlace;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
+
+        plantableToPlace = null;
 
         gameController = new GameController(new User("maegereg@gmail.com"), (LocationManager) getSystemService(Context.LOCATION_SERVICE));
 
@@ -57,6 +60,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
             //Set the listener
             map.setOnMapClickListener(this);
+            map.setOnInfoWindowClickListener(this);
 
             //Add map markers for previously set mines
             for (int i = 0; i<gameController.getUserPlantables().size(); ++i)
@@ -92,6 +96,23 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
     @Override
     public void onMapClick(LatLng latLng) {
-        map.addMarker(new MarkerOptions().position(latLng).title("It's a trap!"));
+        if (plantableToPlace == null)
+        {
+            plantableToPlace = map.addMarker(new MarkerOptions().position(latLng).title("Place").alpha((float) 0.4));
+            plantableToPlace.showInfoWindow();
+        }
+        else
+        {
+            plantableToPlace.remove();
+            plantableToPlace = null;
+        }
+    }
+
+    @Override
+    public void onInfoWindowClick(Marker marker) {
+        marker.setAlpha(1);
+        marker.setDraggable(false);
+        marker.setTitle("");
+        marker.hideInfoWindow();
     }
 }
