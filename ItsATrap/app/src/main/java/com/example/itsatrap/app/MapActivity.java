@@ -21,7 +21,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MapActivity extends Activity implements GoogleMap.OnMapClickListener, GoogleMap.OnInfoWindowClickListener {
+public class MapActivity extends Activity implements GoogleMap.OnMapClickListener, GoogleMap.OnInfoWindowClickListener
+{
 
     private DrawerLayout drawerLayout;
     private ListView drawerList;
@@ -30,7 +31,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     private Marker plantableToPlace;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
@@ -72,7 +74,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
         
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.map, menu);
@@ -80,7 +83,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
@@ -91,11 +95,13 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         return super.onOptionsItemSelected(item);
     }
 
-    public void sweep(View view) {
+    public void sweep(View view)
+    {
     }
 
     @Override
-    public void onMapClick(LatLng latLng) {
+    public void onMapClick(LatLng latLng)
+    {
         if (plantableToPlace == null)
         {
             plantableToPlace = map.addMarker(new MarkerOptions().position(latLng).title("Place").alpha((float) 0.4));
@@ -109,7 +115,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     }
 
     @Override
-    public void onInfoWindowClick(Marker marker) {
+    public void onInfoWindowClick(Marker marker)
+    {
         marker.setAlpha(1);
         marker.setDraggable(false);
         marker.setTitle("");

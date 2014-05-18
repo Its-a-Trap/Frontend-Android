@@ -3,7 +3,8 @@ package com.example.itsatrap.app;
 /**
  * Created by maegereg on 5/10/14.
  */
-public class PlayerInfo {
+public class PlayerInfo
+{
 
     private String name;
     private int score;

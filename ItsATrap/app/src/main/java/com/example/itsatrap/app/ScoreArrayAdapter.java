@@ -14,13 +14,15 @@ import java.util.List;
 /**
  * Created by maegereg on 5/10/14.
  */
-public class ScoreArrayAdapter extends ArrayAdapter<PlayerInfo> {
+public class ScoreArrayAdapter extends ArrayAdapter<PlayerInfo>
+{
 
     private int resource;
     private Context context;
     private List<PlayerInfo> objects;
 
-    public ScoreArrayAdapter(Context context, int resource, List<PlayerInfo> objects) {
+    public ScoreArrayAdapter(Context context, int resource, List<PlayerInfo> objects)
+    {
         super(context, resource, objects);
         this.context = context;
         this.resource = resource;

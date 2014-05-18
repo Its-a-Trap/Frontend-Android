@@ -7,7 +7,8 @@ import java.util.Date;
 /**
  * Created by maegereg on 5/10/14.
  */
-public class Plantable {
+public class Plantable
+{
 
     private int plantableId;
     private int ownerId;

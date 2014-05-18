@@ -19,7 +19,8 @@ import com.google.android.gms.plus.Plus;
  * Sample code drawn from https://developers.google.com/+/mobile/android/getting-started
  * and https://developers.google.com/+/mobile/android/sign-in
  */
-public class LoginActivity extends Activity implements OnConnectionFailedListener, ConnectionCallbacks, View.OnClickListener {
+public class LoginActivity extends Activity implements OnConnectionFailedListener, ConnectionCallbacks, View.OnClickListener
+{
 
 
     private GoogleApiClient gClient;
@@ -44,7 +45,8 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
@@ -74,11 +76,13 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
         }
     }
 
-    public void login_facebook(View view) {
+    public void login_facebook(View view)
+    {
         signInCompleted();
     }
 
-    public void login_google(View view) {
+    public void login_google(View view)
+    {
         if (!gClient.isConnected())
         {
             mSignInClicked = true;
@@ -87,7 +91,8 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
 
     }
 
-    public void login_twitter(View view) {
+    public void login_twitter(View view)
+    {
         signInCompleted();
     }
 
@@ -98,7 +103,8 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
     }
 
     @Override
-    public void onConnected(Bundle bundle) {
+    public void onConnected(Bundle bundle)
+    {
         mSignInClicked = false;
 
         String email = Plus.AccountApi.getAccountName(gClient);
@@ -108,7 +114,8 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
     }
 
     @Override
-    public void onConnectionSuspended(int i) {
+    public void onConnectionSuspended(int i)
+    {
 
     }
 
@@ -129,7 +136,8 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
 
 
         @Override
-    public void onConnectionFailed(ConnectionResult result) {
+    public void onConnectionFailed(ConnectionResult result)
+        {
         if (!mIntentInProgress) {
             // Store the ConnectionResult so that we can use it later when the user clicks
             // 'sign-in'.
@@ -144,7 +152,8 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
     }
 
     /* A helper method to resolve the current ConnectionResult error. */
-    private void resolveSignInError() {
+    private void resolveSignInError()
+    {
         if (mConnectionResult.hasResolution()) {
             try {
                 mIntentInProgress = true;
@@ -159,7 +168,8 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
     }
 
     @Override
-    public void onClick(View view) {
+    public void onClick(View view)
+    {
         if (view.getId() == R.id.google_sign_in_button)
         {
             login_google(view);

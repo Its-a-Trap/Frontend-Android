@@ -15,7 +15,8 @@ import java.util.List;
 /**
  * Created by maegereg on 5/10/14.
  */
-public class GameController {
+public class GameController
+{
 
     private User curUser;
     private List<Plantable> userPlantables;
