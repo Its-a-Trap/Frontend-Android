@@ -3,6 +3,7 @@ package com.example.itsatrap.app;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -43,6 +44,8 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
      */
     private ConnectionResult mConnectionResult;
 
+    private SharedPreferences sharedPrefs;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -50,19 +53,31 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        findViewById(R.id.google_sign_in_button).setOnClickListener(this);
+        sharedPrefs = getSharedPreferences("ItsATrapSettings", 0);
+        if (sharedPrefs.contains(getString(R.string.PrefsEmailString)))
+        {
+            signInCompleted(sharedPrefs.getString(getString(R.string.PrefsEmailString), ""));
+        }
+        else
+        {
+            //Set Google login button onclick
+            findViewById(R.id.google_sign_in_button).setOnClickListener(this);
 
-        gClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(Plus.API, null)
-                .addScope(Plus.SCOPE_PLUS_LOGIN)
-                .build();
+            //Google services client initialization
+            gClient = new GoogleApiClient.Builder(this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(Plus.API, null)
+                    .addScope(Plus.SCOPE_PLUS_LOGIN)
+                    .build();
+        }
     }
 
     protected void onStart()
     {
         super.onStart();
+
+        //Initialize connection to Google server
         gClient.connect();
     }
 
@@ -76,11 +91,19 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
         }
     }
 
+    /**
+     * Onclick method for facebook button
+     * @param view
+     */
     public void login_facebook(View view)
     {
-        signInCompleted();
+        signInCompleted("");
     }
 
+    /**
+     * Onclick method for google button
+     * @param view
+     */
     public void login_google(View view)
     {
         if (!gClient.isConnected())
@@ -91,13 +114,24 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
 
     }
 
+    /**
+     * Onclick method for twitter button
+     */
     public void login_twitter(View view)
     {
-        signInCompleted();
+        signInCompleted("");
     }
 
-    protected void signInCompleted()
+    /**
+     * Method to be called once some sort of sign in has been completed. Sets the username and moves to the next screen
+     * @param email
+     */
+    protected void signInCompleted(String email)
     {
+        //Save current user information
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+        editor.putString(getString(R.string.PrefsEmailString), email);
+
         Intent intent = new Intent(this, MapActivity.class);
         startActivity(intent);
     }
@@ -110,7 +144,7 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
         String email = Plus.AccountApi.getAccountName(gClient);
 
         Toast.makeText(getApplicationContext(), email+" is connected!", Toast.LENGTH_SHORT).show();
-        signInCompleted();
+        signInCompleted(email);
     }
 
     @Override
