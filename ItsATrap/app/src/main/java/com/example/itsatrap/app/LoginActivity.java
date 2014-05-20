@@ -77,15 +77,19 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
     {
         super.onStart();
 
-        //Initialize connection to Google server
-        gClient.connect();
+        if (gClient != null)
+        {
+            //Initialize connection to Google server
+            gClient.connect();
+        }
     }
 
     protected void onStop()
     {
         super.onStop();
 
-        if (gClient.isConnected())
+
+        if (gClient != null && gClient.isConnected())
         {
             gClient.disconnect();
         }
@@ -131,6 +135,7 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
         //Save current user information
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putString(getString(R.string.PrefsEmailString), email);
+        editor.commit();
 
         Intent intent = new Intent(this, MapActivity.class);
         startActivity(intent);
