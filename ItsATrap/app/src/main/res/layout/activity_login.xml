@@ -11,20 +11,11 @@
         android:id="@+id/textView"
         android:layout_gravity="center_horizontal" />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Facebook"
-        android:id="@+id/button"
-        android:layout_gravity="center_horizontal"
-        android:onClick="login_facebook"/>
-
     <com.google.android.gms.common.SignInButton
         android:id="@+id/google_sign_in_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        />
+        android:layout_gravity="center_horizontal" />
 
     <Button
         android:layout_width="wrap_content"
@@ -32,5 +23,12 @@
         android:text="Twitter"
         android:id="@+id/button3"
         android:layout_gravity="center_horizontal"
-        android:onClick="login_twitter"/>
+        android:onClick="login_twitter" />
+
+    <com.facebook.widget.LoginButton
+        android:id="@+id/facebook_sign_in_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal" />
+
 </LinearLayout>
