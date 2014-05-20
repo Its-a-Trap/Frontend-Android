@@ -34,11 +34,6 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
     /* Request code used to invoke sign in user interactions. */
     private static final int RC_SIGN_IN = 0;
 
-    /* Track whether the sign-in button has been clicked so that we know to resolve
-     * all issues preventing sign-in without waiting.
-     */
-    private boolean mSignInClicked;
-
     /* Store the connection result from onConnectionFailed callbacks so that we can
      * resolve them when the user clicks sign-in.
      */
@@ -54,12 +49,12 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
         setContentView(R.layout.activity_login);
 
         sharedPrefs = getSharedPreferences("ItsATrapSettings", 0);
-        if (sharedPrefs.contains(getString(R.string.PrefsEmailString)))
-        {
-            signInCompleted(sharedPrefs.getString(getString(R.string.PrefsEmailString), ""));
-        }
-        else
-        {
+//        if (sharedPrefs.contains(getString(R.string.PrefsEmailString)))
+//        {
+//            signInCompleted(sharedPrefs.getString(getString(R.string.PrefsEmailString), ""));
+//        }
+//        else
+//        {
             //Set Google login button onclick
             findViewById(R.id.google_sign_in_button).setOnClickListener(this);
 
@@ -70,7 +65,7 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
                     .addApi(Plus.API, null)
                     .addScope(Plus.SCOPE_PLUS_LOGIN)
                     .build();
-        }
+//        }
     }
 
     protected void onStart()
@@ -80,7 +75,7 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
         if (gClient != null)
         {
             //Initialize connection to Google server
-            gClient.connect();
+
         }
     }
 
@@ -110,12 +105,7 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
      */
     public void login_google(View view)
     {
-        if (!gClient.isConnected())
-        {
-            mSignInClicked = true;
-            resolveSignInError();
-        }
-
+        gClient.connect();
     }
 
     /**
@@ -144,7 +134,6 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
     @Override
     public void onConnected(Bundle bundle)
     {
-        mSignInClicked = false;
 
         String email = Plus.AccountApi.getAccountName(gClient);
 
@@ -161,9 +150,6 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
     public void onActivityResult(int requestCode, int responseCode, Intent intent)
     {
         if (requestCode == RC_SIGN_IN) {
-            if (responseCode != RESULT_OK) {
-                mSignInClicked = false;
-            }
 
             mIntentInProgress = false;
 
@@ -182,11 +168,7 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
             // 'sign-in'.
             mConnectionResult = result;
 
-            if (mSignInClicked) {
-                // The user has already clicked 'sign-in' so we attempt to resolve all
-                // errors until the user is signed in, or they cancel.
-                resolveSignInError();
-            }
+            resolveSignInError();
         }
     }
 
