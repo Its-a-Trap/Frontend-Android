@@ -2,6 +2,7 @@ package com.example.itsatrap.app;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.location.Criteria;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
@@ -30,6 +31,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     private GameController gameController;
     private Marker plantableToPlace;
 
+    private SharedPreferences sharedPrefs;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -38,7 +41,9 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
         plantableToPlace = null;
 
-        gameController = new GameController(new User("maegereg@gmail.com"), (LocationManager) getSystemService(Context.LOCATION_SERVICE));
+        sharedPrefs = getSharedPreferences("ItsATrapSettings", 0);
+
+        gameController = new GameController(new User(sharedPrefs.getString(getString(R.string.PrefsEmailString), "")), (LocationManager) getSystemService(Context.LOCATION_SERVICE));
 
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawerList = (ListView) findViewById(R.id.left_drawer);
