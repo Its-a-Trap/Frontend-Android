@@ -23,6 +23,8 @@ public class GameController
     private List<Plantable> enemyPlantables;
     private List<PlayerInfo> highScores;
 
+    private LatLng lastRegisteredLocation;
+
     public GameController(User curUser, List<Plantable> userPlantables, List<Plantable> enemyPlantables, List<PlayerInfo> highScores)
     {
         this.curUser = curUser;
@@ -82,8 +84,29 @@ public class GameController
         }
     }
 
+    /**
+     * Perform the necessary updates given that the user is now at the given location
+     * @param curLoc
+     */
+    public void updateLocation(LatLng curLoc)
+    {
+        //Currently we'll update the server's value for the location every time we've moved five miles.
+        if (distanceBetween(curLoc, lastRegisteredLocation) > 8046.72)
+        {
+            getHighScoresAndEnemyMinesFromServer(curLoc);
+        }
+
+        List<Plantable> possiblyExplodeds = checkForCollisions(curLoc);
+        for (Plantable toExplode : possiblyExplodeds)
+        {
+            attemptToExplodePlantable(toExplode);
+        }
+
+    }
+
+
     /*
-        Returns a list of all enemy plantables within their radius of the provided location
+        Returns a list of all enemy plantables within their radius of the provided location - used for detecting explosions
      */
     public List<Plantable> checkForCollisions(LatLng currentLocation)
     {
@@ -91,9 +114,7 @@ public class GameController
         for (int i = 0; i<enemyPlantables.size(); ++i)
         {
             LatLng otherLocation = enemyPlantables.get(i).getLocation();
-            float[] distance = new float[1];
-            Location.distanceBetween(currentLocation.latitude, currentLocation.longitude, otherLocation.latitude, otherLocation.longitude, distance);
-            if (distance[0] < enemyPlantables.get(i).getRadius())
+            if (distanceBetween(currentLocation, otherLocation) < enemyPlantables.get(i).getRadius())
             {
                 results.add(enemyPlantables.get(i));
             }
@@ -110,9 +131,8 @@ public class GameController
         for (int i = 0; i<enemyPlantables.size(); ++i)
         {
             LatLng otherLocation = enemyPlantables.get(i).getLocation();
-            float[] distance = new float[1];
-            Location.distanceBetween(currentLocation.latitude, currentLocation.longitude, otherLocation.latitude, otherLocation.longitude, distance);
-            if (distance[0] < radius)
+
+            if (distanceBetween(currentLocation, otherLocation) < radius)
             {
                 results.add(enemyPlantables.get(i));
             }
@@ -127,6 +147,7 @@ public class GameController
         PlayerInfo[] hardCodedEntries = {new PlayerInfo("Jeff", 9001) , new PlayerInfo("DSM", 6), new PlayerInfo("Calder", 6), new PlayerInfo("Carissa", 6), new PlayerInfo("DermDerm", 5), new PlayerInfo("Tao", 5), new PlayerInfo("Carlton", 5), new PlayerInfo("Quinn", 5)};
         highScores = Arrays.asList(hardCodedEntries);
         enemyPlantables = new ArrayList<Plantable>();
+        lastRegisteredLocation = curLoc;
     }
 
     //Stub
@@ -137,6 +158,20 @@ public class GameController
         toReturn.add(new Plantable(0, 3, new LatLng(44.456799, -93.156410), new Date(), 100, 15));
         toReturn.add(new Plantable(1, 3, new LatLng(44.459832, -93.151389), new Date(), 100, 15));
         return toReturn;
+    }
+
+    //Stub
+    private void attemptToExplodePlantable(Plantable toExplode)
+    {
+
+    }
+
+
+    public float distanceBetween(LatLng firstLoc, LatLng secondLoc)
+    {
+        float[] distance = new float[1];
+        Location.distanceBetween(firstLoc.latitude, firstLoc.longitude, secondLoc.latitude, secondLoc.longitude, distance);
+        return distance[0];
     }
 
 }

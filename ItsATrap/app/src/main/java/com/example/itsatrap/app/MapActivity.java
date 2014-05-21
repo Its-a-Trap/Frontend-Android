@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Criteria;
+import android.location.LocationListener;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.location.Location;
@@ -22,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MapActivity extends Activity implements GoogleMap.OnMapClickListener, GoogleMap.OnInfoWindowClickListener
+public class MapActivity extends Activity implements GoogleMap.OnMapClickListener, GoogleMap.OnInfoWindowClickListener, LocationListener
 {
 
     private DrawerLayout drawerLayout;
@@ -74,6 +75,11 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             {
                 map.addMarker(new MarkerOptions().position(gameController.getUserPlantables().get(i).getLocation()).title("It's a trap!"));
             }
+
+            //Set this activity to listen for location changes
+            Criteria criteria = new Criteria();
+            criteria.setAccuracy(Criteria.ACCURACY_FINE);
+            locationManager.requestLocationUpdates(1000, 1, criteria, this, null);
         }
     }
 
@@ -126,5 +132,25 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         marker.setDraggable(false);
         marker.setTitle("");
         marker.hideInfoWindow();
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        gameController.updateLocation(new LatLng(location.getLatitude(), location.getLongitude()));
+    }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String s) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String s) {
+
     }
 }
