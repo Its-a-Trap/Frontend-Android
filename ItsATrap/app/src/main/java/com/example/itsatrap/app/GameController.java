@@ -62,28 +62,6 @@ public class GameController
         return userPlantables;
     }
 
-    public void addUserPlantable(Plantable newPlantable)
-    {
-        userPlantables.add(newPlantable);
-    }
-
-    public void removeUserPlantable(Plantable toRemove)
-    {
-        userPlantables.remove(toRemove);
-    }
-
-    public void removeUserPlantable(int idToRemove)
-    {
-        for (int i = 0; i<userPlantables.size(); ++i)
-        {
-            if (userPlantables.get(i).getPlantableId() == idToRemove)
-            {
-                userPlantables.remove(i);
-                return;
-            }
-        }
-    }
-
     /**
      * Perform the necessary updates given that the user is now at the given location
      * @param curLoc
@@ -164,6 +142,38 @@ public class GameController
     private void attemptToExplodePlantable(Plantable toExplode)
     {
 
+    }
+
+    //Stub
+    public void addUserPlantable(LatLng newLoc)
+    {
+        //These values should change...
+        addUserPlantable(new Plantable(0, 0, newLoc, new Date(), 10000, 15));
+    }
+
+    //Stub
+    public void addUserPlantable(Plantable newPlantable)
+    {
+        userPlantables.add(newPlantable);
+    }
+
+    //Stub
+    public void removeUserPlantable(Plantable toRemove)
+    {
+        userPlantables.remove(toRemove);
+    }
+
+    //Stub
+    public void removeUserPlantable(int idToRemove)
+    {
+        for (int i = 0; i<userPlantables.size(); ++i)
+        {
+            if (userPlantables.get(i).getPlantableId() == idToRemove)
+            {
+                userPlantables.remove(i);
+                return;
+            }
+        }
     }
 
 

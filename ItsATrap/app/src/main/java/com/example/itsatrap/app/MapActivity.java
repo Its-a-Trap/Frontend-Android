@@ -132,6 +132,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         marker.setDraggable(false);
         marker.setTitle("");
         marker.hideInfoWindow();
+        gameController.addUserPlantable(marker.getPosition());
     }
 
     @Override
