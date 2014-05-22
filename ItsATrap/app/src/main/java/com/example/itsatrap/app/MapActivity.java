@@ -28,6 +28,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
     private DrawerLayout drawerLayout;
     private ListView drawerList;
+    private ArrayAdapter listAdapter;
+
     private GoogleMap map;
     private GameController gameController;
     private Marker plantableToPlace;
@@ -44,13 +46,14 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
         sharedPrefs = getSharedPreferences(getString(R.string.SharedPrefName), 0);
 
-        gameController = new GameController(new User(sharedPrefs.getString(getString(R.string.PrefsEmailString), "")), (LocationManager) getSystemService(Context.LOCATION_SERVICE));
+        gameController = new GameController(new User(sharedPrefs.getString(getString(R.string.PrefsEmailString), ""), "537e48763511c15161a1ed9b", ""), (LocationManager) getSystemService(Context.LOCATION_SERVICE));
 
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawerList = (ListView) findViewById(R.id.left_drawer);
 
         // Set the adapter for the list view
-        drawerList.setAdapter(new ScoreArrayAdapter(this, R.layout.drawer_list_item, gameController.getHighScores()));
+        listAdapter = new ScoreArrayAdapter(this, R.layout.drawer_list_item, gameController.getHighScores());
+        drawerList.setAdapter(listAdapter);
         // Get a handle to the Map Fragment
         map = ((MapFragment) getFragmentManager()
                 .findFragmentById(R.id.map)).getMap();
@@ -138,7 +141,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     @Override
     public void onLocationChanged(Location location) {
 
-        gameController.updateLocation(new LatLng(location.getLatitude(), location.getLongitude()));
+        gameController.updateLocation(new LatLng(location.getLatitude(), location.getLongitude()), listAdapter);
     }
 
     @Override

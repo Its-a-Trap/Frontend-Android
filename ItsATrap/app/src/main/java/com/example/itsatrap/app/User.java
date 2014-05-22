@@ -7,7 +7,7 @@ public class User
 {
 
     private String email;
-    private int id;
+    private String id;
     private String username;
 
     public User(String email)
@@ -15,14 +15,14 @@ public class User
         this.email = email;
     }
 
-    public User(String email, int id, String username)
+    public User(String email, String id, String username)
     {
         this.email = email;
         this.id = id;
         this.username = username;
     }
 
-    public void setId(int id)
+    public void setId(String id)
     {
         this.id = id;
     }
@@ -32,7 +32,7 @@ public class User
         this.username = username;
     }
 
-    public int getId(int id)
+    public String getId()
     {
         return id;
     }
