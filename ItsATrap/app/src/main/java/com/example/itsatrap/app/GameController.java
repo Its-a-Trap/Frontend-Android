@@ -66,8 +66,6 @@ public class GameController
         this.curUser = curUser;
         enemyPlantablesLock = new ReentrantLock();
         highScoresLock = new ReentrantLock();
-        enemyPlantables = new ArrayList<Plantable>();
-        highScores = new ArrayList<PlayerInfo>();
 
         Location curLocation = locManager.getLastKnownLocation(locManager.getBestProvider(new Criteria(), true));
         LatLng curLoc = new LatLng(curLocation.getLatitude(), curLocation.getLongitude());
