@@ -4,13 +4,32 @@ import android.content.Context;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by maegereg on 5/10/14.
@@ -18,10 +37,16 @@ import java.util.List;
 public class GameController
 {
 
+    private final String serverAddress = "http://192.168.1.140:3000";
+
     private User curUser;
     private List<Plantable> userPlantables;
     private List<Plantable> enemyPlantables;
     private List<PlayerInfo> highScores;
+
+    private Lock userPlantablesLock;
+    private Lock enemyPlantablesLock;
+    private Lock highScoresLock;
 
     private LatLng lastRegisteredLocation;
 
@@ -31,15 +56,22 @@ public class GameController
         this.userPlantables = userPlantables;
         this.enemyPlantables = enemyPlantables;
         this.highScores = highScores;
+
+        enemyPlantablesLock = new ReentrantLock();
+        highScoresLock = new ReentrantLock();
     }
 
     public GameController(User curUser, LocationManager locManager)
     {
         this.curUser = curUser;
+        enemyPlantablesLock = new ReentrantLock();
+        highScoresLock = new ReentrantLock();
+
         Location curLocation = locManager.getLastKnownLocation(locManager.getBestProvider(new Criteria(), true));
         LatLng curLoc = new LatLng(curLocation.getLatitude(), curLocation.getLongitude());
         getHighScoresAndEnemyMinesFromServer(curLoc);
         userPlantables = getMyMinesFromServer();
+
     }
 
     public void setHighScores(List<PlayerInfo> highScores)
@@ -54,7 +86,18 @@ public class GameController
 
     public List<PlayerInfo> getHighScores()
     {
-        return highScores;
+        highScoresLock.lock();
+        try
+        {
+            if (highScores != null)
+                return highScores;
+            else
+                return new ArrayList<PlayerInfo>();
+        }
+        finally
+        {
+            highScoresLock.unlock();
+        }
     }
 
     public List<Plantable> getUserPlantables()
@@ -69,7 +112,7 @@ public class GameController
     public void updateLocation(LatLng curLoc)
     {
         //Currently we'll update the server's value for the location every time we've moved five miles.
-        if (distanceBetween(curLoc, lastRegisteredLocation) > 8046.72)
+        if ( lastRegisteredLocation != null && distanceBetween(curLoc, lastRegisteredLocation) > 8046.72)
         {
             getHighScoresAndEnemyMinesFromServer(curLoc);
         }
@@ -88,6 +131,7 @@ public class GameController
      */
     public List<Plantable> checkForCollisions(LatLng currentLocation)
     {
+        enemyPlantablesLock.lock();
         List<Plantable> results = new ArrayList<Plantable>();
         for (int i = 0; i<enemyPlantables.size(); ++i)
         {
@@ -97,7 +141,14 @@ public class GameController
                 results.add(enemyPlantables.get(i));
             }
         }
+        try
+        {
         return results;
+        }
+        finally
+        {
+            enemyPlantablesLock.unlock();
+        }
     }
 
     /*
@@ -105,6 +156,7 @@ public class GameController
      */
     public List<Plantable> getEnemyPlantablesWithinRadius(LatLng currentLocation, float radius)
     {
+        enemyPlantablesLock.lock();
         List<Plantable> results = new ArrayList<Plantable>();
         for (int i = 0; i<enemyPlantables.size(); ++i)
         {
@@ -115,17 +167,101 @@ public class GameController
                 results.add(enemyPlantables.get(i));
             }
         }
-        return results;
+        try
+        {
+            return results;
+        }
+        finally
+        {
+            enemyPlantablesLock.unlock();
+        }
     }
 
     //Stub
+    //TODO: Do something about all the errors this might throw
     private void getHighScoresAndEnemyMinesFromServer(LatLng curLoc)
     {
+        //Construct JSON object to send to server
+        JSONObject toSend = new JSONObject();
+        try {
+            JSONObject loc = new JSONObject();
+            loc.put("lat", curLoc.latitude);
+            loc.put("lon", curLoc.longitude);
+            toSend.put("location", loc);
+            //TODO: Possibly change to id?
+            toSend.put("user", curUser.getEmail());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        //Make request - use an async task
+
+        class PostLocationTask extends AsyncTask<JSONObject, Void, Void>
+        {
+
+            @Override
+            protected Void doInBackground(JSONObject... jsonObjects) {
+                enemyPlantablesLock.lock();
+                highScoresLock.lock();
+                HttpURLConnection connection = null;
+                String response = "";
+                try {
+                    HttpClient client = new DefaultHttpClient();
+                    HttpPost request = new HttpPost(serverAddress+"/api/changearea");
+                    request.setHeader("Content-Type", "application/json");
+                    request.setEntity(new StringEntity(jsonObjects[0].toString()));
+                    response = getStreamContent(client.execute(request).getEntity().getContent());
+
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                finally {
+                    if (connection != null)
+                    {
+                        connection.disconnect();
+                    }
+                }
+
+                try {
+                    JSONObject responseObject = new JSONObject(response);
+                    JSONArray plantables = responseObject.getJSONArray("mines");
+                    ArrayList<Plantable> newEnemyPlantables = new ArrayList<Plantable>();
+                    for (int i = 0; i < plantables.length(); ++i)
+                    {
+                        newEnemyPlantables.add(new Plantable(plantables.getJSONObject(i)));
+                    }
+                    enemyPlantables = newEnemyPlantables;
+                    JSONArray scores = responseObject.getJSONArray("scores");
+                    ArrayList<PlayerInfo> newHighScores = new ArrayList<PlayerInfo>();
+                    for (int i = 0; i < scores.length(); ++i)
+                    {
+                        newHighScores.add(new PlayerInfo(scores.getJSONObject(i)));
+                    }
+                    highScores = newHighScores;
+
+
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                enemyPlantablesLock.unlock();
+                highScoresLock.unlock();
+                return null;
+            }
+        }
+
+        new PostLocationTask().execute(toSend);
+
+
         //Server magic goes here
-        PlayerInfo[] hardCodedEntries = {new PlayerInfo("Jeff", 9001) , new PlayerInfo("DSM", 6), new PlayerInfo("Calder", 6), new PlayerInfo("Carissa", 6), new PlayerInfo("DermDerm", 5), new PlayerInfo("Tao", 5), new PlayerInfo("Carlton", 5), new PlayerInfo("Quinn", 5)};
-        highScores = Arrays.asList(hardCodedEntries);
-        enemyPlantables = new ArrayList<Plantable>();
-        lastRegisteredLocation = curLoc;
+//        PlayerInfo[] hardCodedEntries = {new PlayerInfo("Jeff", 9001) , new PlayerInfo("DSM", 6), new PlayerInfo("Calder", 6), new PlayerInfo("Carissa", 6), new PlayerInfo("DermDerm", 5), new PlayerInfo("Tao", 5), new PlayerInfo("Carlton", 5), new PlayerInfo("Quinn", 5)};
+//        highScores = Arrays.asList(hardCodedEntries);
+//        enemyPlantables = new ArrayList<Plantable>();
+//        lastRegisteredLocation = curLoc;
     }
 
     //Stub
@@ -133,8 +269,8 @@ public class GameController
     {
         //Server magic goes here
         ArrayList<Plantable> toReturn = new ArrayList<Plantable>();
-        toReturn.add(new Plantable(0, 3, new LatLng(44.456799, -93.156410), new Date(), 100, 15));
-        toReturn.add(new Plantable(1, 3, new LatLng(44.459832, -93.151389), new Date(), 100, 15));
+        toReturn.add(new Plantable("0", "3", new LatLng(44.456799, -93.156410), new Date(), 100, 15));
+        toReturn.add(new Plantable("1", "3", new LatLng(44.459832, -93.151389), new Date(), 100, 15));
         return toReturn;
     }
 
@@ -148,7 +284,7 @@ public class GameController
     public void addUserPlantable(LatLng newLoc)
     {
         //These values should change...
-        addUserPlantable(new Plantable(0, 0, newLoc, new Date(), 10000, 15));
+        addUserPlantable(new Plantable("0", "0", newLoc, new Date(), 10000, 15));
     }
 
     //Stub
@@ -164,7 +300,7 @@ public class GameController
     }
 
     //Stub
-    public void removeUserPlantable(int idToRemove)
+    public void removeUserPlantable(String idToRemove)
     {
         for (int i = 0; i<userPlantables.size(); ++i)
         {
@@ -177,11 +313,26 @@ public class GameController
     }
 
 
-    public float distanceBetween(LatLng firstLoc, LatLng secondLoc)
+    public static float distanceBetween(LatLng firstLoc, LatLng secondLoc)
     {
         float[] distance = new float[1];
         Location.distanceBetween(firstLoc.latitude, firstLoc.longitude, secondLoc.latitude, secondLoc.longitude, distance);
         return distance[0];
+    }
+
+    public static String getStreamContent(InputStream stream)
+    {
+        StringBuilder builder = new StringBuilder();
+        int c;
+        try {
+            while ((c = stream.read()) != -1 )
+            {
+                builder.append((char)c);
+            }
+
+        } catch (IOException e) {
+        }
+        return builder.toString();
     }
 
 }
