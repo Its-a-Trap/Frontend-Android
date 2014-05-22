@@ -48,7 +48,7 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        sharedPrefs = getSharedPreferences(getString(R.string.SharedPrefName), 0);
+        sharedPrefs = getSharedPreferences("ItsATrapSettings", 0);
 //        if (sharedPrefs.contains(getString(R.string.PrefsEmailString)))
 //        {
 //            signInCompleted(sharedPrefs.getString(getString(R.string.PrefsEmailString), ""));

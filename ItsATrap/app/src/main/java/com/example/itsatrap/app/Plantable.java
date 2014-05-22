@@ -2,9 +2,6 @@ package com.example.itsatrap.app;
 
 import com.google.android.gms.maps.model.LatLng;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.Date;
 
 /**
@@ -13,44 +10,29 @@ import java.util.Date;
 public class Plantable
 {
 
-    private String plantableId;
-    private String ownerId;
+    private int plantableId;
+    private int ownerId;
     private LatLng location;
     private boolean isActive;
-//    private Date plantTime;
-//    //In seconds
-//    private long duration;
-//    //In meters
+    private Date plantTime;
+    //In seconds
+    private long duration;
+    //In meters
     private float radius;
 
-    public Plantable(JSONObject plantable)
-    {
-        try {
-            this.plantableId = plantable.getString("id");
-            this.ownerId = plantable.getString("owner");
-            this.isActive = true;
-            JSONObject location = plantable.getJSONObject("location");
-            this.location = new LatLng(location.getDouble("lat"), location.getDouble("lon"));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        this.radius = 10;
-    }
-
-    public Plantable(String plantableId, String ownerId, LatLng location, Date plantTime, long duration, float radius)
+    public Plantable(int plantableId, int ownerId, LatLng location, Date plantTime, long duration, float radius)
     {
         this.plantableId = plantableId;
         this.ownerId = ownerId;
         this.location = location;
-//        this.plantTime = plantTime;
-//        this.duration = duration;
-        this.radius = 10;
+        this.plantTime = plantTime;
+        this.duration = duration;
+        this.radius = radius;
 
         isActive = true;
     }
 
-    public void setPlantableId(String id)
+    public void setPlantableId(int id)
     {
         plantableId = id;
     }
@@ -60,22 +42,22 @@ public class Plantable
         this.isActive = isActive;
     }
 
-//    public void setDuration(long duration)
-//    {
-//        this.duration = duration;
-//    }
-//
-//    public void setRadius(float radius)
-//    {
-//        this.radius = radius;
-//    }
+    public void setDuration(long duration)
+    {
+        this.duration = duration;
+    }
 
-    public String getPlantableId()
+    public void setRadius(float radius)
+    {
+        this.radius = radius;
+    }
+
+    public int getPlantableId()
     {
         return plantableId;
     }
 
-    public String getOwnerId()
+    public int getOwnerId()
     {
         return ownerId;
     }
@@ -90,16 +72,16 @@ public class Plantable
         return isActive;
     }
 
-//    public Date getPlantTime()
-//    {
-//        return plantTime;
-//    }
+    public Date getPlantTime()
+    {
+        return plantTime;
+    }
 
-//    public long getDuration()
-//    {
-//        return duration;
-//    }
-//
+    public long getDuration()
+    {
+        return duration;
+    }
+
     public float getRadius()
     {
         return radius;

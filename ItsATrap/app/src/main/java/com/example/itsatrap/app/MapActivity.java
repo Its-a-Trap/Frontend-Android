@@ -42,7 +42,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
         plantableToPlace = null;
 
-        sharedPrefs = getSharedPreferences(getString(R.string.SharedPrefName), 0);
+        sharedPrefs = getSharedPreferences("ItsATrapSettings", 0);
 
         gameController = new GameController(new User(sharedPrefs.getString(getString(R.string.PrefsEmailString), "")), (LocationManager) getSystemService(Context.LOCATION_SERVICE));
 
@@ -137,7 +137,6 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
     @Override
     public void onLocationChanged(Location location) {
-
         gameController.updateLocation(new LatLng(location.getLatitude(), location.getLongitude()));
     }
 
