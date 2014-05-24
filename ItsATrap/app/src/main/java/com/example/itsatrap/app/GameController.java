@@ -39,57 +39,32 @@ import java.util.concurrent.locks.ReentrantLock;
 public class GameController
 {
 
-    private final String serverAddress = "http://192.168.1.104:3000";
+    private final String serverAddress = "http://192.168.1.140:3000";
 
     private User curUser;
-    private List<Plantable> userPlantables;
-    private List<Plantable> enemyPlantables;
-    private List<PlayerInfo> highScores;
-
-    private Lock userPlantablesLock;
-    private Lock enemyPlantablesLock;
-    private Lock highScoresLock;
-    private Condition highScoresPopulated;
+    private final List<Plantable> userPlantables = new ArrayList<Plantable>();
+    private final List<Plantable> enemyPlantables = new ArrayList<Plantable>();
+    private final List<PlayerInfo> highScores = new ArrayList<PlayerInfo>();
 
     private LatLng lastRegisteredLocation;
 
     public GameController(User curUser, LocationManager locManager)
     {
         this.curUser = curUser;
-        enemyPlantablesLock = new ReentrantLock();
-        highScoresLock = new ReentrantLock();
-        highScoresPopulated = highScoresLock.newCondition();
 
         Location curLocation = locManager.getLastKnownLocation(locManager.getBestProvider(new Criteria(), true));
         LatLng curLoc = new LatLng(curLocation.getLatitude(), curLocation.getLongitude());
-        getHighScoresAndEnemyMinesFromServer(curLoc, null);
-        userPlantables = getMyMinesFromServer();
+        getHighScoresAndMinesFromServer(curLoc, null);
 
-    }
+        // Dummy mines for testing
+        userPlantables.add(new Plantable("0", "3", new LatLng(44.456799, -93.156410), new Date(), 100, 15));
+        userPlantables.add(new Plantable("1", "3", new LatLng(44.459832, -93.151389), new Date(), 100, 15));
 
-    public void setHighScores(List<PlayerInfo> highScores)
-    {
-        this.highScores = highScores;
-    }
-
-    public void setEnemyPlantables(List<Plantable> enemyPlantables)
-    {
-        this.enemyPlantables = enemyPlantables;
     }
 
     public List<PlayerInfo> getHighScores()
     {
-        highScoresLock.lock();
-        try
-        {
-            if (highScores == null)
-                highScoresPopulated.awaitUninterruptibly();
-            return highScores;
-        }
-        finally
-        {
-            highScoresLock.unlock();
-        }
+        return highScores;
     }
 
     public List<Plantable> getUserPlantables()
@@ -106,7 +81,7 @@ public class GameController
         //Currently we'll update the server's value for the location every time we've moved five miles.
         if ( lastRegisteredLocation != null && distanceBetween(curLoc, lastRegisteredLocation) > 8046.72)
         {
-            getHighScoresAndEnemyMinesFromServer(curLoc, toUpdate);
+            getHighScoresAndMinesFromServer(curLoc, toUpdate);
         }
 
         List<Plantable> possiblyExplodeds = checkForCollisions(curLoc);
@@ -123,23 +98,18 @@ public class GameController
      */
     public List<Plantable> checkForCollisions(LatLng currentLocation)
     {
-        enemyPlantablesLock.lock();
-        List<Plantable> results = new ArrayList<Plantable>();
-        for (int i = 0; i<enemyPlantables.size(); ++i)
+        synchronized (enemyPlantables)
         {
-            LatLng otherLocation = enemyPlantables.get(i).getLocation();
-            if (distanceBetween(currentLocation, otherLocation) < enemyPlantables.get(i).getRadius())
+            List<Plantable> results = new ArrayList<Plantable>();
+            for (int i = 0; i<enemyPlantables.size(); ++i)
             {
-                results.add(enemyPlantables.get(i));
+                LatLng otherLocation = enemyPlantables.get(i).getLocation();
+                if (distanceBetween(currentLocation, otherLocation) < enemyPlantables.get(i).getRadius())
+                {
+                    results.add(enemyPlantables.get(i));
+                }
             }
-        }
-        try
-        {
-        return results;
-        }
-        finally
-        {
-            enemyPlantablesLock.unlock();
+            return results;
         }
     }
 
@@ -148,40 +118,25 @@ public class GameController
      */
     public List<Plantable> getEnemyPlantablesWithinRadius(LatLng currentLocation, float radius)
     {
-        enemyPlantablesLock.lock();
-        List<Plantable> results = new ArrayList<Plantable>();
-        for (int i = 0; i<enemyPlantables.size(); ++i)
+        synchronized (enemyPlantables)
         {
-            LatLng otherLocation = enemyPlantables.get(i).getLocation();
-
-            if (distanceBetween(currentLocation, otherLocation) < radius)
+            List<Plantable> results = new ArrayList<Plantable>();
+            for (int i = 0; i<enemyPlantables.size(); ++i)
             {
-                results.add(enemyPlantables.get(i));
+                LatLng otherLocation = enemyPlantables.get(i).getLocation();
+
+                if (distanceBetween(currentLocation, otherLocation) < radius)
+                {
+                    results.add(enemyPlantables.get(i));
+                }
             }
-        }
-        try
-        {
             return results;
-        }
-        finally
-        {
-            enemyPlantablesLock.unlock();
         }
     }
 
     //TODO: Do something about all the errors this might throw
-    private void getHighScoresAndEnemyMinesFromServer(LatLng curLoc, final ArrayAdapter toUpdate)
+    private void getHighScoresAndMinesFromServer(LatLng curLoc, final ArrayAdapter toUpdate)
     {
-        highScoresLock.lock();
-        final List<PlayerInfo> oldHighScores =  highScores != null ? highScores : new ArrayList<PlayerInfo>();
-        highScores = null;
-        highScoresLock.unlock();
-
-        enemyPlantablesLock.lock();
-        final List<Plantable> oldEnemyPlantables = enemyPlantables != null ? enemyPlantables : new ArrayList<Plantable>();
-        enemyPlantables = null;
-        enemyPlantablesLock.unlock();
-
         //Construct JSON object to send to server
         JSONObject toSend = new JSONObject();
         try {
@@ -202,8 +157,6 @@ public class GameController
 
             @Override
             protected Void doInBackground(JSONObject... jsonObjects) {
-                enemyPlantablesLock.lock();
-                highScoresLock.lock();
                 HttpURLConnection connection = null;
                 String response = "";
                 //Make the web request to fetch new data
@@ -230,31 +183,28 @@ public class GameController
                 try {
                     JSONObject responseObject = new JSONObject(response);
                     JSONArray plantables = responseObject.getJSONArray("mines");
-
-                    oldEnemyPlantables.clear();
-                    for (int i = 0; i < plantables.length(); ++i)
-                    {
-                        oldEnemyPlantables.add(new Plantable(plantables.getJSONObject(i)));
-                    }
-
                     JSONArray scores = responseObject.getJSONArray("scores");
-                    oldHighScores.clear();
-                    for (int i = 0; i < scores.length(); ++i)
+
+                    synchronized (enemyPlantables)
                     {
-                        oldHighScores.add(new PlayerInfo(scores.getJSONObject(i)));
+                        enemyPlantables.clear();
+                        for (int i = 0; i < plantables.length(); ++i)
+                        {
+                            enemyPlantables.add(new Plantable(plantables.getJSONObject(i)));
+                        }
+                    }
+                    synchronized (highScores)
+                    {
+                        highScores.clear();
+                        for (int i = 0; i < scores.length(); ++i)
+                        {
+                            highScores.add(new PlayerInfo(scores.getJSONObject(i)));
+                        }
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
 
-                //If we don't have new data to assign, they will be made empty
-                enemyPlantables = oldEnemyPlantables;
-                highScores = oldHighScores;
-
-                highScoresPopulated.signalAll();
-
-                enemyPlantablesLock.unlock();
-                highScoresLock.unlock();
                 return null;
             }
 
@@ -278,16 +228,6 @@ public class GameController
     }
 
     //Stub
-    private List<Plantable> getMyMinesFromServer()
-    {
-        //Server magic goes here
-        ArrayList<Plantable> toReturn = new ArrayList<Plantable>();
-        toReturn.add(new Plantable("0", "3", new LatLng(44.456799, -93.156410), new Date(), 100, 15));
-        toReturn.add(new Plantable("1", "3", new LatLng(44.459832, -93.151389), new Date(), 100, 15));
-        return toReturn;
-    }
-
-    //Stub
     private void attemptToExplodePlantable(Plantable toExplode)
     {
 
@@ -297,13 +237,104 @@ public class GameController
     public void addUserPlantable(LatLng newLoc)
     {
         //These values should change...
-        addUserPlantable(new Plantable("0", "0", newLoc, new Date(), 10000, 15));
-    }
+        userPlantables.add(new Plantable("0", "0", newLoc, new Date(), 10000, 15));
 
-    //Stub
-    public void addUserPlantable(Plantable newPlantable)
-    {
-        userPlantables.add(newPlantable);
+//        highScoresLock.lock();
+//        final List<PlayerInfo> oldHighScores =  highScores != null ? highScores : new ArrayList<PlayerInfo>();
+//        highScores = null;
+//        highScoresLock.unlock();
+//
+//        enemyPlantablesLock.lock();
+//        final List<Plantable> oldEnemyPlantables = enemyPlantables != null ? enemyPlantables : new ArrayList<Plantable>();
+//        enemyPlantables = null;
+//        enemyPlantablesLock.unlock();
+//
+//        //Construct JSON object to send to server
+//        JSONObject toSend = new JSONObject();
+//        try {
+//            JSONObject loc = new JSONObject();
+//            loc.put("lat", curLoc.latitude);
+//            loc.put("lon", curLoc.longitude);
+//            toSend.put("location", loc);
+//            //TODO: Possibly change to id?
+//            toSend.put("user", curUser.getId());
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//
+//        //Make request - use an async task
+//
+//        class PostLocationTask extends AsyncTask<JSONObject, Void, Void>
+//        {
+//
+//            @Override
+//            protected Void doInBackground(JSONObject... jsonObjects) {
+//                enemyPlantablesLock.lock();
+//                highScoresLock.lock();
+//                HttpURLConnection connection = null;
+//                String response = "";
+//                //Make the web request to fetch new data
+//                try {
+//                    HttpClient client = new DefaultHttpClient();
+//                    HttpPost request = new HttpPost(serverAddress+"/api/changearea");
+//                    request.setHeader("Content-Type", "application/json");
+//                    request.setEntity(new StringEntity(jsonObjects[0].toString()));
+//                    response = getStreamContent(client.execute(request).getEntity().getContent());
+//
+//                } catch (MalformedURLException e) {
+//                    e.printStackTrace();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//                finally {
+//                    if (connection != null)
+//                    {
+//                        connection.disconnect();
+//                    }
+//                }
+//
+//                //Parse the data
+//                try {
+//                    JSONObject responseObject = new JSONObject(response);
+//                    JSONArray plantables = responseObject.getJSONArray("mines");
+//
+//                    oldEnemyPlantables.clear();
+//                    for (int i = 0; i < plantables.length(); ++i)
+//                    {
+//                        oldEnemyPlantables.add(new Plantable(plantables.getJSONObject(i)));
+//                    }
+//
+//                    JSONArray scores = responseObject.getJSONArray("scores");
+//                    oldHighScores.clear();
+//                    for (int i = 0; i < scores.length(); ++i)
+//                    {
+//                        oldHighScores.add(new PlayerInfo(scores.getJSONObject(i)));
+//                    }
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//
+//                //If we don't have new data to assign, they will be made empty
+//                enemyPlantables = oldEnemyPlantables;
+//                highScores = oldHighScores;
+//
+//                highScoresPopulated.signalAll();
+//
+//                enemyPlantablesLock.unlock();
+//                highScoresLock.unlock();
+//                return null;
+//            }
+//
+//            @Override
+//            protected void onPostExecute(Void v)
+//            {
+//                if (toUpdate != null)
+//                    toUpdate.notifyDataSetChanged();
+//            }
+//
+//        }
+//
+//        new PostLocationTask().execute(toSend);
     }
 
     //Stub
