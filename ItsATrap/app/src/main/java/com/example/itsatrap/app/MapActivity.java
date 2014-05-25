@@ -136,6 +136,9 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         marker.setTitle("");
         marker.hideInfoWindow();
         gameController.addUserPlantable(marker.getPosition());
+        plantableToPlace = null;
+
+
     }
 
     @Override
