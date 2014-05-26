@@ -90,13 +90,15 @@ public class GameController
         {
             getHighScoresAndMinesFromServer(curLoc);
         }
+    }
 
+    public void collideWithEnemyMines(LatLng curLoc)
+    {
         List<Plantable> possiblyExplodeds = checkForCollisions(curLoc);
         for (Plantable toExplode : possiblyExplodeds)
         {
             attemptToExplodePlantable(toExplode);
         }
-
     }
 
 
@@ -115,6 +117,11 @@ public class GameController
                 {
                     results.add(enemyPlantables.get(i));
                 }
+            }
+            //TODO: Remove this testing if statement
+            if (results.size() <= 0 && enemyPlantables.size() > 0)
+            {
+                results.add(enemyPlantables.get(0));
             }
             return results;
         }
@@ -142,7 +149,7 @@ public class GameController
     }
 
     //TODO: Do something about all the errors this might throw
-    private void getHighScoresAndMinesFromServer(LatLng curLoc)
+    private void getHighScoresAndMinesFromServer(final LatLng curLoc)
     {
         //Construct JSON object to send to server
         JSONObject toSend = new JSONObject();
@@ -235,6 +242,7 @@ public class GameController
             {
                 mapActivity.updateHighScores();
                 mapActivity.updateMyMines();
+                collideWithEnemyMines(curLoc);
             }
 
         }
@@ -250,9 +258,70 @@ public class GameController
     }
 
     //Stub
-    private void attemptToExplodePlantable(Plantable toExplode)
+    private void attemptToExplodePlantable(final Plantable toExplode)
     {
+        //Construct JSON object to send to server
+        JSONObject toSend = new JSONObject();
+        try {
+            toSend.put("user", curUser.getId());
+            toSend.put("id", toExplode.getPlantableId());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
+        //Make request - use an async task
+
+        class PostExplodeTask extends AsyncTask<JSONObject, Void, Boolean>
+        {
+            private MapActivity mapActivity;
+
+            public PostExplodeTask(MapActivity mapActivity)
+            {
+                this.mapActivity = mapActivity;
+            }
+
+
+            @Override
+            protected Boolean doInBackground(JSONObject... jsonObjects) {
+                HttpURLConnection connection = null;
+                String response = "";
+                //Make the web request to fetch new data
+                try {
+                    HttpClient client = new DefaultHttpClient();
+                    HttpPost request = new HttpPost(serverAddress+"/api/explodemine");
+                    request.setHeader("Content-Type", "application/json");
+                    request.setEntity(new StringEntity(jsonObjects[0].toString()));
+                    response = getStreamContent(client.execute(request).getEntity().getContent());
+
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                finally {
+                    if (connection != null)
+                    {
+                        connection.disconnect();
+                    }
+                }
+
+                //'Parse' the data
+                return response.equals("true");
+            }
+
+            @Override
+            protected void onPostExecute(Boolean exploded)
+            {
+                if (exploded)
+                {
+                    mapActivity.displayExploded();
+                    enemyPlantables.remove(toExplode);
+                }
+            }
+
+        }
+
+        new PostExplodeTask(mapActivity).execute(toSend);
     }
 
 

@@ -100,17 +100,6 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             map.setOnInfoWindowClickListener(this);
             map.setOnMarkerClickListener(this);
 
-            //Add map markers for previously set mines
-            List<Plantable> userPlantables = gameController.getUserPlantables();
-            for (Plantable plantable : userPlantables)
-            {
-                Marker marker = map.addMarker(new MarkerOptions()
-                        .position(plantable.getLocation())
-                        .title(getString(R.string.yourTrap))
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-                markerData.put(marker, plantable);
-            }
-
             //Set this activity to listen for location changes
             Criteria criteria = new Criteria();
             criteria.setAccuracy(Criteria.ACCURACY_FINE);
@@ -306,6 +295,12 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             sweepMine.remove();
         }
     }
+
+    public void displayExploded()
+    {
+        Toast.makeText(this, "You have been trapped.", Toast.LENGTH_SHORT).show();
+    }
+
 
 
 }
