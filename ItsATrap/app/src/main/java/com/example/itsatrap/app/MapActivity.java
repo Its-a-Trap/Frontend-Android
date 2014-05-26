@@ -14,6 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
@@ -117,7 +118,11 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     public void onMapClick(LatLng latLng)
     {
         // If you're out of plantable items, don't let them do it
-        if (gameController.getNumUserPlantablesLeft() > 0)
+        if (gameController.getNumUserPlantablesLeft() <= 0)
+        {
+            Toast.makeText(this, "No traps left", Toast.LENGTH_SHORT).show();
+        }
+        else
         {
             if (plantableToPlace == null)
             {
