@@ -66,10 +66,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         if  (map != null)
         {
             LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
-            Location curLocation = locationManager.getLastKnownLocation(locationManager.getBestProvider(new Criteria(), true));
-
-            LatLng curLoc = new LatLng(curLocation.getLatitude(), curLocation.getLongitude());
+            LatLng curLoc = getCurLatLng();
 
             map.setMyLocationEnabled(true);
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(curLoc, 13));
@@ -78,6 +75,15 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             map.setOnMapClickListener(this);
             map.setOnInfoWindowClickListener(this);
 
+            //Add map markers for previously set mines
+            for (int i = 0; i<gameController.getUserPlantables().size(); ++i)
+            {
+                map.addMarker(new MarkerOptions()
+                        .position(gameController.getUserPlantables().get(i).getLocation())
+                        .title("It's a trap!")
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+            }
+
             //Set this activity to listen for location changes
             Criteria criteria = new Criteria();
             criteria.setAccuracy(Criteria.ACCURACY_FINE);
@@ -85,6 +91,13 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         }
     }
 
+    private LatLng getCurLatLng()
+    {
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        Location curLocation = locationManager.getLastKnownLocation(locationManager.getBestProvider(new Criteria(), true));
+        LatLng curLoc = new LatLng(curLocation.getLatitude(), curLocation.getLongitude());
+        return curLoc;
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
@@ -110,6 +123,16 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
     public void sweep(View view)
     {
+        List<Plantable> enemyTraps = gameController.getEnemyPlantablesWithinRadius(getCurLatLng(), 25);
+        // TODO: make swept enemy traps disappear eventually
+        // (and what if they are triggered before disappearing?)
+        for (Plantable trap : enemyTraps)
+        {
+            map.addMarker(new MarkerOptions()
+                    .position(trap.getLocation())
+                    .title("It's a trap!")
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+        }
     }
 
     @Override
@@ -124,7 +147,11 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         {
             if (plantableToPlace == null)
             {
-                plantableToPlace = map.addMarker(new MarkerOptions().position(latLng).title("Place").alpha((float) 0.4));
+                plantableToPlace = map.addMarker(new MarkerOptions()
+                        .position(latLng)
+                        .title("Place")
+                        .alpha((float) 0.4)
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
                 plantableToPlace.showInfoWindow();
             }
             else
