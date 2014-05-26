@@ -278,22 +278,23 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
     public void updateMyMines()
     {
-        for (Marker marker : currentlyDisplayedEnemyPlantables)
+        for (Marker marker : markerData.keySet())
         {
             marker.remove();
         }
 
-        currentlyDisplayedEnemyPlantables.clear();
+        markerData.clear();
 
         List<Plantable> myPlantables = gameController.getUserPlantables();
         synchronized (myPlantables)
         {
             //Add map markers for previously set mines
             for (int i = 0; i < myPlantables.size(); ++i) {
-                currentlyDisplayedEnemyPlantables.add(map.addMarker(new MarkerOptions()
+                markerData.put(map.addMarker(new MarkerOptions()
                         .position(myPlantables.get(i).getLocation())
                         .title("It's a trap!")
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))));
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))),
+                        myPlantables.get(i));
             }
         }
     }
