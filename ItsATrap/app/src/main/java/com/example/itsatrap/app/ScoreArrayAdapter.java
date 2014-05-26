@@ -39,8 +39,11 @@ public class ScoreArrayAdapter extends ArrayAdapter<PlayerInfo>
             row = inflater.inflate(resource, parent, false);
         }
 
-        ((TextView)row.findViewById(R.id.drawer_name_text)).setText(objects.get(position).getName());
-        ((TextView)row.findViewById(R.id.drawer_score_text)).setText(Integer.toString(objects.get(position).getScore()));
+        synchronized (objects)
+        {
+            ((TextView) row.findViewById(R.id.drawer_name_text)).setText(objects.get(position).getName());
+            ((TextView) row.findViewById(R.id.drawer_score_text)).setText(Integer.toString(objects.get(position).getScore()));
+        }
 
         return row;
     }

@@ -36,17 +36,21 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
     private SharedPreferences sharedPrefs;
 
+    private List<Marker> currentlyDisplayedPlantables;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
+        currentlyDisplayedPlantables = new ArrayList<Marker>();
+
         plantableToPlace = null;
 
         sharedPrefs = getSharedPreferences(getString(R.string.SharedPrefName), 0);
 
-        gameController = new GameController(new User(sharedPrefs.getString(getString(R.string.PrefsEmailString), ""), "537e48763511c15161a1ed9b", ""), (LocationManager) getSystemService(Context.LOCATION_SERVICE));
+        gameController = new GameController(new User(sharedPrefs.getString(getString(R.string.PrefsEmailString), ""), "537e48763511c15161a1ed9b", ""), (LocationManager) getSystemService(Context.LOCATION_SERVICE), this);
 
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawerList = (ListView) findViewById(R.id.left_drawer);
@@ -72,12 +76,6 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             //Set the listener
             map.setOnMapClickListener(this);
             map.setOnInfoWindowClickListener(this);
-
-            //Add map markers for previously set mines
-            for (int i = 0; i<gameController.getUserPlantables().size(); ++i)
-            {
-                map.addMarker(new MarkerOptions().position(gameController.getUserPlantables().get(i).getLocation()).title("It's a trap!"));
-            }
 
             //Set this activity to listen for location changes
             Criteria criteria = new Criteria();
@@ -141,7 +139,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     @Override
     public void onLocationChanged(Location location) {
 
-        gameController.updateLocation(new LatLng(location.getLatitude(), location.getLongitude()), listAdapter);
+        gameController.updateLocation(new LatLng(location.getLatitude(), location.getLongitude()));
     }
 
     @Override
@@ -158,4 +156,30 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     public void onProviderDisabled(String s) {
 
     }
+
+    public void updateHighScores()
+    {
+        listAdapter.notifyDataSetChanged();
+    }
+
+    public void updateMyMines()
+    {
+        for (Marker marker : currentlyDisplayedPlantables)
+        {
+            marker.remove();
+        }
+
+        currentlyDisplayedPlantables.clear();
+
+        List<Plantable> myPlantables = gameController.getUserPlantables();
+        synchronized (myPlantables)
+        {
+            //Add map markers for previously set mines
+            for (int i = 0; i < myPlantables.size(); ++i) {
+                map.addMarker(new MarkerOptions().position(myPlantables.get(i).getLocation()).title("It's a trap!"));
+            }
+        }
+    }
+
+
 }
