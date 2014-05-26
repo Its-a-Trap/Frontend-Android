@@ -35,7 +35,7 @@ public class Plantable
             e.printStackTrace();
         }
 
-        this.radius = 10;
+        this.radius = 2;
     }
 
     public Plantable(String plantableId, String ownerId, LatLng location, Date plantTime, long duration, float radius)
@@ -45,7 +45,7 @@ public class Plantable
         this.location = location;
 //        this.plantTime = plantTime;
 //        this.duration = duration;
-        this.radius = 10;
+        this.radius = 2;
 
         isActive = true;
     }
