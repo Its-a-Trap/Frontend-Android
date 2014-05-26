@@ -65,10 +65,6 @@ public class GameController
         LatLng curLoc = new LatLng(curLocation.getLatitude(), curLocation.getLongitude());
         getHighScoresAndMinesFromServer(curLoc);
 
-        // Dummy mines for testing
-        userPlantables.add(new Plantable("0", "3", new LatLng(44.456799, -93.156410), new Date(), 100, 15));
-        userPlantables.add(new Plantable("1", "3", new LatLng(44.459832, -93.151389), new Date(), 100, 15));
-
     }
 
     public List<PlayerInfo> getHighScores()
@@ -199,6 +195,7 @@ public class GameController
                     JSONObject responseObject = new JSONObject(response);
                     JSONArray plantables = responseObject.getJSONArray("mines");
                     JSONArray scores = responseObject.getJSONArray("scores");
+                    JSONArray myPlantables = responseObject.getJSONArray("myMines");
 
                     synchronized (enemyPlantables)
                     {
@@ -206,6 +203,14 @@ public class GameController
                         for (int i = 0; i < plantables.length(); ++i)
                         {
                             enemyPlantables.add(new Plantable(plantables.getJSONObject(i)));
+                        }
+                    }
+                    synchronized (userPlantables)
+                    {
+                        userPlantables.clear();
+                        for (int i = 0; i < myPlantables.length(); ++i)
+                        {
+                            userPlantables.add(new Plantable(myPlantables.getJSONObject(i)));
                         }
                     }
                     synchronized (highScores)
@@ -227,6 +232,7 @@ public class GameController
             protected void onPostExecute(Void v)
             {
                 mapActivity.updateHighScores();
+                mapActivity.updateMyMines();
             }
 
         }

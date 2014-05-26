@@ -19,9 +19,7 @@ import android.widget.Toast;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class MapActivity extends Activity implements GoogleMap.OnMapClickListener, GoogleMap.OnInfoWindowClickListener, LocationListener
@@ -37,7 +35,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
     private SharedPreferences sharedPrefs;
 
-    private List<Marker> currentlyDisplayedPlantables;
+    private List<Marker> currentlyDisplayedEnemyPlantables;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -45,7 +43,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
-        currentlyDisplayedPlantables = new ArrayList<Marker>();
+        currentlyDisplayedEnemyPlantables = new ArrayList<Marker>();
 
         plantableToPlace = null;
 
@@ -203,19 +201,19 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
     public void updateMyMines()
     {
-        for (Marker marker : currentlyDisplayedPlantables)
+        for (Marker marker : currentlyDisplayedEnemyPlantables)
         {
             marker.remove();
         }
 
-        currentlyDisplayedPlantables.clear();
+        currentlyDisplayedEnemyPlantables.clear();
 
         List<Plantable> myPlantables = gameController.getUserPlantables();
         synchronized (myPlantables)
         {
             //Add map markers for previously set mines
             for (int i = 0; i < myPlantables.size(); ++i) {
-                map.addMarker(new MarkerOptions().position(myPlantables.get(i).getLocation()).title("It's a trap!"));
+                currentlyDisplayedEnemyPlantables.add(map.addMarker(new MarkerOptions().position(myPlantables.get(i).getLocation()).title("It's a trap!")));
             }
         }
     }
