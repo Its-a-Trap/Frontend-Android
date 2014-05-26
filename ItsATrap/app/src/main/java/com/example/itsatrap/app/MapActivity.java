@@ -1,6 +1,7 @@
 package com.example.itsatrap.app;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Criteria;
@@ -106,6 +107,13 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             criteria.setAccuracy(Criteria.ACCURACY_FINE);
             locationManager.requestLocationUpdates(1000, 1, criteria, this, null);
         }
+
+        //Do the tutorial
+        AlertDialog.Builder instructions = new AlertDialog.Builder(this);
+        instructions.setTitle("Instructions");
+        instructions.setMessage("Welcome to It's a trap. Your goal is to plant traps that nearby players will walk over. Click on the map to place a trap - you can place up to 12. You can sweep to discover enemy traps. You will be notified if you walk over an enemy trap. Swipe from the left side of the screen to view high scores.");
+        instructions.setPositiveButton("Ok", null);
+        instructions.show();
     }
 
     private LatLng getCurLatLng()
@@ -217,7 +225,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         {
             markerData.put(marker, newPlantable);
             ((TextView) findViewById(R.id.your_plantable_count))
-                    .setText(String.valueOf(gameController.getNumUserPlantablesLeft())+"\ntraps left");
+                    .setText(String.valueOf(gameController.getNumUserPlantablesLeft()) + "\ntraps left");
         }
         plantableToPlace = null;
     }
@@ -232,7 +240,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             gameController.removeUserPlantable(trapToRemove);
             marker.remove();
             ((TextView) findViewById(R.id.your_plantable_count))
-                    .setText(String.valueOf(gameController.getNumUserPlantablesLeft())+"\ntraps left");
+                    .setText(String.valueOf(gameController.getNumUserPlantablesLeft()) + "\ntraps left");
         }
 
 

@@ -118,11 +118,6 @@ public class GameController
                     results.add(enemyPlantables.get(i));
                 }
             }
-            //TODO: Remove this testing if statement
-            if (results.size() <= 0 && enemyPlantables.size() > 0)
-            {
-                results.add(enemyPlantables.get(0));
-            }
             return results;
         }
     }
