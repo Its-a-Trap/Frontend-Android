@@ -266,7 +266,10 @@ public class GameController
     {
         //These values should change...
         Plantable newPlantable = new Plantable("0", "0", newLoc, new Date(), 10000, 15);
-        userPlantables.add(newPlantable);
+        synchronized (userPlantables)
+        {
+            userPlantables.add(newPlantable);
+        }
         //Construct JSON object to send to server
         JSONObject toSend = new JSONObject();
         try {
@@ -331,7 +334,10 @@ public class GameController
     //Stub
     public void removeUserPlantable(Plantable toRemove)
     {
-        userPlantables.remove(toRemove);
+        synchronized (userPlantables)
+        {
+            userPlantables.remove(toRemove);
+        }
         //Construct JSON object to send to server
         JSONObject toSend = new JSONObject();
         try {
@@ -390,16 +396,16 @@ public class GameController
     //Stub
     public void removeUserPlantable(String idToRemove)
     {
-        for (int i = 0; i<userPlantables.size(); ++i)
+        synchronized (userPlantables)
         {
-            if (userPlantables.get(i).getPlantableId() == idToRemove)
-            {
-                userPlantables.remove(i);
-                return;
+            for (int i = 0; i < userPlantables.size(); ++i) {
+                if (userPlantables.get(i).getPlantableId() == idToRemove) {
+                    userPlantables.remove(i);
+                    return;
+                }
             }
         }
     }
-
 
     public static float distanceBetween(LatLng firstLoc, LatLng secondLoc)
     {
