@@ -328,7 +328,10 @@ public class GameController
     //Stub
     public int getNumUserPlantablesLeft()
     {
-        return maxPlantables - userPlantables.size();
+        synchronized (userPlantables)
+        {
+            return maxPlantables - userPlantables.size();
+        }
     }
 
     public Plantable addUserPlantable(LatLng newLoc)

@@ -34,9 +34,36 @@
             android:layout_height="wrap_content"
             android:text="SWEEP"
             android:onClick="sweep" />
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal" >
+
+            <ImageView
+                android:id="@+id/your_plantable_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/marker_green" />
+
+            <TextView
+                android:id="@+id/your_plantable_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignLeft="@+id/your_plantable_image"
+                android:layout_alignRight="@+id/your_plantable_image"
+                android:layout_alignTop="@+id/your_plantable_image"
+                android:layout_alignBottom="@+id/your_plantable_image"
+                android:gravity="center_horizontal"
+                android:layout_margin="6dp"
+                android:text="##\ntraps left" />
+        </RelativeLayout>
+
+
+
+
     </FrameLayout>
 
-    <!--</FrameLayout>-->
 
     <!-- The navigation drawer -->
     <ListView android:id="@+id/left_drawer"

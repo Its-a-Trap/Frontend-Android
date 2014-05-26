@@ -14,6 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.*;
@@ -215,6 +216,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         if (newPlantable != null)
         {
             markerData.put(marker, newPlantable);
+            ((TextView) findViewById(R.id.your_plantable_count))
+                    .setText(String.valueOf(gameController.getNumUserPlantablesLeft())+"\ntraps left");
         }
         plantableToPlace = null;
     }
@@ -228,6 +231,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             Plantable trapToRemove = markerData.get(marker);
             gameController.removeUserPlantable(trapToRemove);
             marker.remove();
+            ((TextView) findViewById(R.id.your_plantable_count))
+                    .setText(String.valueOf(gameController.getNumUserPlantablesLeft())+"\ntraps left");
         }
 
 
@@ -280,11 +285,14 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             //Add map markers for previously set mines
             for (int i = 0; i < myPlantables.size(); ++i) {
                 markerData.put(map.addMarker(new MarkerOptions()
-                        .position(myPlantables.get(i).getLocation())
-                        .title(getString(R.string.yourTrap))
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))),
-                        myPlantables.get(i));
+                                .position(myPlantables.get(i).getLocation())
+                                .title(getString(R.string.yourTrap))
+                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))),
+                        myPlantables.get(i)
+                );
             }
+            ((TextView) findViewById(R.id.your_plantable_count))
+                    .setText(String.valueOf(gameController.getNumUserPlantablesLeft())+"\ntraps left");
         }
     }
 
