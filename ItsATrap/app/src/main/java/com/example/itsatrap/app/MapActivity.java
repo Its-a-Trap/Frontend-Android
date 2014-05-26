@@ -19,7 +19,6 @@ import android.widget.Toast;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -40,17 +39,21 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
     private SharedPreferences sharedPrefs;
 
+    private List<Marker> currentlyDisplayedEnemyPlantables;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
+        currentlyDisplayedEnemyPlantables = new ArrayList<Marker>();
+
         plantableToPlace = null;
 
         sharedPrefs = getSharedPreferences(getString(R.string.SharedPrefName), 0);
 
-        gameController = new GameController(new User(sharedPrefs.getString(getString(R.string.PrefsEmailString), ""), "537e48763511c15161a1ed9b", ""), (LocationManager) getSystemService(Context.LOCATION_SERVICE));
+        gameController = new GameController(new User(sharedPrefs.getString(getString(R.string.PrefsEmailString), ""), "537e48763511c15161a1ed9b", ""), (LocationManager) getSystemService(Context.LOCATION_SERVICE), this);
 
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawerList = (ListView) findViewById(R.id.left_drawer);
@@ -205,7 +208,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     @Override
     public void onLocationChanged(Location location) {
 
-        gameController.updateLocation(new LatLng(location.getLatitude(), location.getLongitude()), listAdapter);
+        gameController.updateLocation(new LatLng(location.getLatitude(), location.getLongitude()));
     }
 
     @Override
@@ -222,4 +225,30 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     public void onProviderDisabled(String s) {
 
     }
+
+    public void updateHighScores()
+    {
+        listAdapter.notifyDataSetChanged();
+    }
+
+    public void updateMyMines()
+    {
+        for (Marker marker : currentlyDisplayedEnemyPlantables)
+        {
+            marker.remove();
+        }
+
+        currentlyDisplayedEnemyPlantables.clear();
+
+        List<Plantable> myPlantables = gameController.getUserPlantables();
+        synchronized (myPlantables)
+        {
+            //Add map markers for previously set mines
+            for (int i = 0; i < myPlantables.size(); ++i) {
+                currentlyDisplayedEnemyPlantables.add(map.addMarker(new MarkerOptions().position(myPlantables.get(i).getLocation()).title("It's a trap!")));
+            }
+        }
+    }
+
+
 }

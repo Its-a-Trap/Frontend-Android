@@ -40,7 +40,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class GameController
 {
 
-    private final String serverAddress = "http://192.168.1.140:3000";
+    private final String serverAddress = "http://107.170.182.13:3000";
 
     private User curUser;
     private final List<Plantable> userPlantables = new ArrayList<Plantable>();
@@ -49,19 +49,21 @@ public class GameController
 
     private LatLng lastRegisteredLocation;
 
+    //We need a reference back to the mapActivity so the async tasks can call methods on it
+    //TODO: refactor so that the mapactivity handles network connections
+    private MapActivity mapActivity;
+
     private int maxPlantables = 12;
 
-    public GameController(User curUser, LocationManager locManager)
+    public GameController(User curUser, LocationManager locManager, MapActivity mapActivity)
+
     {
         this.curUser = curUser;
+        this.mapActivity = mapActivity;
 
         Location curLocation = locManager.getLastKnownLocation(locManager.getBestProvider(new Criteria(), true));
         LatLng curLoc = new LatLng(curLocation.getLatitude(), curLocation.getLongitude());
-        getHighScoresAndMinesFromServer(curLoc, null);
-
-        // Dummy mines for testing
-        userPlantables.add(new Plantable("0", "3", new LatLng(44.456799, -93.156410), new Date(), 100, 15));
-        userPlantables.add(new Plantable("1", "3", new LatLng(44.459832, -93.151389), new Date(), 100, 15));
+        getHighScoresAndMinesFromServer(curLoc);
 
     }
 
@@ -79,12 +81,12 @@ public class GameController
      * Perform the necessary updates given that the user is now at the given location
      * @param curLoc
      */
-    public void updateLocation(LatLng curLoc, ArrayAdapter toUpdate)
+    public void updateLocation(LatLng curLoc)
     {
         //Currently we'll update the server's value for the location every time we've moved five miles.
         if ( lastRegisteredLocation != null && distanceBetween(curLoc, lastRegisteredLocation) > 8046.72)
         {
-            getHighScoresAndMinesFromServer(curLoc, toUpdate);
+            getHighScoresAndMinesFromServer(curLoc);
         }
 
         List<Plantable> possiblyExplodeds = checkForCollisions(curLoc);
@@ -138,7 +140,7 @@ public class GameController
     }
 
     //TODO: Do something about all the errors this might throw
-    private void getHighScoresAndMinesFromServer(LatLng curLoc, final ArrayAdapter toUpdate)
+    private void getHighScoresAndMinesFromServer(LatLng curLoc)
     {
         //Construct JSON object to send to server
         JSONObject toSend = new JSONObject();
@@ -147,7 +149,6 @@ public class GameController
             loc.put("lat", curLoc.latitude);
             loc.put("lon", curLoc.longitude);
             toSend.put("location", loc);
-            //TODO: Possibly change to id?
             toSend.put("user", curUser.getId());
         } catch (JSONException e) {
             e.printStackTrace();
@@ -157,6 +158,13 @@ public class GameController
 
         class PostLocationTask extends AsyncTask<JSONObject, Void, Void>
         {
+            private MapActivity mapActivity;
+
+            public PostLocationTask(MapActivity mapActivity)
+            {
+                this.mapActivity = mapActivity;
+            }
+
 
             @Override
             protected Void doInBackground(JSONObject... jsonObjects) {
@@ -187,6 +195,7 @@ public class GameController
                     JSONObject responseObject = new JSONObject(response);
                     JSONArray plantables = responseObject.getJSONArray("mines");
                     JSONArray scores = responseObject.getJSONArray("scores");
+                    JSONArray myPlantables = responseObject.getJSONArray("myMines");
 
                     synchronized (enemyPlantables)
                     {
@@ -194,6 +203,14 @@ public class GameController
                         for (int i = 0; i < plantables.length(); ++i)
                         {
                             enemyPlantables.add(new Plantable(plantables.getJSONObject(i)));
+                        }
+                    }
+                    synchronized (userPlantables)
+                    {
+                        userPlantables.clear();
+                        for (int i = 0; i < myPlantables.length(); ++i)
+                        {
+                            userPlantables.add(new Plantable(myPlantables.getJSONObject(i)));
                         }
                     }
                     synchronized (highScores)
@@ -214,13 +231,13 @@ public class GameController
             @Override
             protected void onPostExecute(Void v)
             {
-                if (toUpdate != null)
-                    toUpdate.notifyDataSetChanged();
+                mapActivity.updateHighScores();
+                mapActivity.updateMyMines();
             }
 
         }
 
-        new PostLocationTask().execute(toSend);
+        new PostLocationTask(mapActivity).execute(toSend);
 
 
         //Server magic goes here
@@ -272,7 +289,7 @@ public class GameController
                 try {
                     // /placemine - {location: {lat:___, lon:___}, user:___}  --> true if successful, false otherwise
                     HttpClient client = new DefaultHttpClient();
-                    HttpPost request = new HttpPost(serverAddress+"/api/plantmine");
+                    HttpPost request = new HttpPost(serverAddress+"/api/placemine");
                     request.setHeader("Content-Type", "application/json");
                     request.setEntity(new StringEntity(jsonObjects[0].toString()));
                     response = getStreamContent(client.execute(request).getEntity().getContent());
