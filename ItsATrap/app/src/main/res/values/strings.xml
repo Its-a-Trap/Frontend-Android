@@ -8,7 +8,7 @@
     <string name="SharedPrefName">ItsATrapPrefs</string>
 
     <string name="placeTrap">Place?</string>
-    <string name="yourTrap">Your trap</string>
+    <string name="yourTrap">Remove?</string>
     <string name="watchOut">Watch out!</string>
 
 
