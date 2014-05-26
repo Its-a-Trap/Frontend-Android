@@ -292,7 +292,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             for (int i = 0; i < myPlantables.size(); ++i) {
                 markerData.put(map.addMarker(new MarkerOptions()
                         .position(myPlantables.get(i).getLocation())
-                        .title("It's a trap!")
+                        .title(getString(R.string.yourTrap))
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))),
                         myPlantables.get(i));
             }
