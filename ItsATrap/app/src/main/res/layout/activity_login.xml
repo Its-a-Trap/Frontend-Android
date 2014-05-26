@@ -7,9 +7,11 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Login"
+        android:text="It's a Trap!"
         android:id="@+id/textView"
-        android:layout_gravity="center_horizontal" />
+        android:layout_gravity="center_horizontal"
+        android:textSize="50dp"
+        android:layout_margin="30dp"/>
 
     <com.google.android.gms.common.SignInButton
         android:id="@+id/google_sign_in_button"
@@ -20,15 +22,15 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Twitter"
+        android:text="Magic Login"
         android:id="@+id/button3"
         android:layout_gravity="center_horizontal"
         android:onClick="login_twitter" />
 
-    <com.facebook.widget.LoginButton
-        android:id="@+id/facebook_sign_in_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal" />
+    <!--<com.facebook.widget.LoginButton-->
+        <!--android:id="@+id/facebook_sign_in_button"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_gravity="center_horizontal" />-->
 
 </LinearLayout>
