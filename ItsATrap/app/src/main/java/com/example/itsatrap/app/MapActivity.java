@@ -1,6 +1,7 @@
 package com.example.itsatrap.app;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Criteria;
@@ -108,6 +109,13 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             criteria.setAccuracy(Criteria.ACCURACY_FINE);
             locationManager.requestLocationUpdates(1000, 1, criteria, this, null);
         }
+
+        //Do the tutorial
+        AlertDialog.Builder instructions = new AlertDialog.Builder(this);
+        instructions.setTitle("Instructions");
+        instructions.setMessage("Welcome to It's a trap. Your goal is to plant traps that nearby players will walk over. Click on the map to place a trap - you can place up to 12. You can sweep to discover enemy traps. You will be notified if you walk over an enemy trap. Swipe from the left side of the screen to view high scores.");
+        instructions.setPositiveButton("Ok", null);
+        instructions.show();
     }
 
     private LatLng getCurLatLng()
@@ -144,7 +152,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     {
         if (lastSweeped != null && new Date().getTime() - lastSweeped.getTime() < 1000*60*SWEEP_COOLDOWN)
         {
-            long minutesLeft = (new Date().getTime() - lastSweeped.getTime())/1000/60 + 1;
+            long minutesLeft = (SWEEP_COOLDOWN*60*1000 - (new Date().getTime() - lastSweeped.getTime()))/1000/60 + 1;
             Toast.makeText(this, "Can't sweep again for "+minutesLeft+" minutes.", Toast.LENGTH_SHORT).show();
             return;
         }

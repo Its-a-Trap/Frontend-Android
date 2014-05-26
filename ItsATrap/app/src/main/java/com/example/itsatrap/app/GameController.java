@@ -41,8 +41,8 @@ public class GameController
 {
 
     //TODO: Remove this; it's just for testing.
-    private final String serverAddress = "http://137.22.164.195:3000";
-    private final String realServerAddress = "http://107.170.182.13:3000";
+//    private final String serverAddress = "http://137.22.164.195:3000";
+    private final String serverAddress = "http://107.170.182.13:3000";
 
     private User curUser;
     private final List<Plantable> userPlantables = new ArrayList<Plantable>();
@@ -86,10 +86,10 @@ public class GameController
     public void updateLocation(LatLng curLoc)
     {
         //Currently we'll update the server's value for the location every time we've moved five miles.
-        if ( lastRegisteredLocation != null && distanceBetween(curLoc, lastRegisteredLocation) > 8046.72)
-        {
+//        if ( lastRegisteredLocation != null && distanceBetween(curLoc, lastRegisteredLocation) > 8046.72)
+//        {
             getHighScoresAndMinesFromServer(curLoc);
-        }
+//        }
     }
 
     public void collideWithEnemyMines(LatLng curLoc)
@@ -117,11 +117,6 @@ public class GameController
                 {
                     results.add(enemyPlantables.get(i));
                 }
-            }
-            //TODO: Remove this testing if statement
-            if (results.size() <= 0 && enemyPlantables.size() > 0)
-            {
-                results.add(enemyPlantables.get(0));
             }
             return results;
         }
@@ -337,7 +332,7 @@ public class GameController
     public Plantable addUserPlantable(LatLng newLoc)
     {
         //These values should change...
-        Plantable newPlantable = new Plantable("0", "0", newLoc, new Date(), 10000, 15);
+        Plantable newPlantable = new Plantable("0", "0", newLoc, new Date(), 10000, 2);
         synchronized (userPlantables)
         {
             userPlantables.add(newPlantable);
