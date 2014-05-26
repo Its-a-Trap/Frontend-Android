@@ -288,7 +288,7 @@ public class GameController
                 try {
                     // /placemine - {location: {lat:___, lon:___}, user:___}  --> true if successful, false otherwise
                     HttpClient client = new DefaultHttpClient();
-                    HttpPost request = new HttpPost(serverAddress+"/api/plantmine");
+                    HttpPost request = new HttpPost(serverAddress+"/api/placemine");
                     request.setHeader("Content-Type", "application/json");
                     request.setEntity(new StringEntity(jsonObjects[0].toString()));
                     response = getStreamContent(client.execute(request).getEntity().getContent());
