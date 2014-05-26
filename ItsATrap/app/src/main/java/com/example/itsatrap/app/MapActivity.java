@@ -22,9 +22,11 @@ import com.google.android.gms.maps.model.*;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
-public class MapActivity extends Activity implements GoogleMap.OnMapClickListener, GoogleMap.OnInfoWindowClickListener, LocationListener
+public class MapActivity extends Activity implements GoogleMap.OnMapClickListener,
+        GoogleMap.OnInfoWindowClickListener, LocationListener, GoogleMap.OnMarkerClickListener
 {
 
     private DrawerLayout drawerLayout;
@@ -34,6 +36,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     private GoogleMap map;
     private GameController gameController;
     private Marker plantableToPlace;
+    private HashMap<Marker, Plantable> markerData;
 
     private SharedPreferences sharedPrefs;
 
@@ -59,6 +62,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         map = ((MapFragment) getFragmentManager()
                 .findFragmentById(R.id.map)).getMap();
 
+        markerData = new HashMap<Marker, Plantable>();
+
         if  (map != null)
         {
             LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -70,14 +75,17 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             //Set the listener
             map.setOnMapClickListener(this);
             map.setOnInfoWindowClickListener(this);
+            map.setOnMarkerClickListener(this);
 
             //Add map markers for previously set mines
-            for (int i = 0; i<gameController.getUserPlantables().size(); ++i)
+            List<Plantable> userPlantables = gameController.getUserPlantables();
+            for (Plantable plantable : userPlantables)
             {
-                map.addMarker(new MarkerOptions()
-                        .position(gameController.getUserPlantables().get(i).getLocation())
-                        .title("It's a trap!")
+                Marker marker = map.addMarker(new MarkerOptions()
+                        .position(plantable.getLocation())
+                        .title(getString(R.string.yourTrap))
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                markerData.put(marker, plantable);
             }
 
             //Set this activity to listen for location changes
@@ -122,12 +130,13 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         List<Plantable> enemyTraps = gameController.getEnemyPlantablesWithinRadius(getCurLatLng(), 25);
         // TODO: make swept enemy traps disappear eventually
         // (and what if they are triggered before disappearing?)
-        for (Plantable trap : enemyTraps)
+        for (Plantable plantable : enemyTraps)
         {
-            map.addMarker(new MarkerOptions()
-                    .position(trap.getLocation())
-                    .title("It's a trap!")
+            Marker marker = map.addMarker(new MarkerOptions()
+                    .position(plantable.getLocation())
+                    .title(getString(R.string.watchOut))
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+            markerData.put(marker, plantable);
         }
     }
 
@@ -145,7 +154,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             {
                 plantableToPlace = map.addMarker(new MarkerOptions()
                         .position(latLng)
-                        .title("Place")
+                        .title(getString(R.string.placeTrap))
                         .alpha((float) 0.4)
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
                 plantableToPlace.showInfoWindow();
@@ -163,12 +172,34 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     {
         marker.setAlpha(1);
         marker.setDraggable(false);
-        marker.setTitle("");
+        marker.setTitle(getString(R.string.yourTrap));
         marker.hideInfoWindow();
-        gameController.addUserPlantable(marker.getPosition());
+        Plantable newPlantable = gameController.addUserPlantable(marker.getPosition());
+        if (newPlantable != null)
+        {
+            markerData.put(marker, newPlantable);
+        }
         plantableToPlace = null;
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker)
+    {
+        if (marker.getTitle().equals(getString(R.string.yourTrap)))
+        {
+            // get the Plantable to remove from the marker
+            Plantable trapToRemove = markerData.get(marker);
+            gameController.removeUserPlantable(trapToRemove);
+            marker.remove();
+        }
 
 
+        /* if marker is yours:
+            get the Plantable trapToRemove from the marker somehow??? -- compare their locations?
+            remove the trap
+            undraw the marker
+         */
+        return true;
     }
 
     @Override
