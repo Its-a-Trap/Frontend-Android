@@ -86,10 +86,10 @@ public class GameController
     public void updateLocation(LatLng curLoc)
     {
         //Currently we'll update the server's value for the location every time we've moved five miles.
-        if ( lastRegisteredLocation != null && distanceBetween(curLoc, lastRegisteredLocation) > 8046.72)
-        {
+//        if ( lastRegisteredLocation != null && distanceBetween(curLoc, lastRegisteredLocation) > 8046.72)
+//        {
             getHighScoresAndMinesFromServer(curLoc);
-        }
+//        }
     }
 
     public void collideWithEnemyMines(LatLng curLoc)
