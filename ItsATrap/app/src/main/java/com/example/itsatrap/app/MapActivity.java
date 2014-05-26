@@ -290,7 +290,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         {
             //Add map markers for previously set mines
             for (int i = 0; i < myPlantables.size(); ++i) {
-                currentlyDisplayedEnemyPlantables.add(map.addMarker(new MarkerOptions().position(myPlantables.get(i).getLocation())
+                currentlyDisplayedEnemyPlantables.add(map.addMarker(new MarkerOptions()
+                        .position(myPlantables.get(i).getLocation())
                         .title("It's a trap!")
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))));
             }

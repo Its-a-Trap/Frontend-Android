@@ -40,7 +40,9 @@ import java.util.concurrent.locks.ReentrantLock;
 public class GameController
 {
 
-    private final String serverAddress = "http://137.22.164.195:3000";//107.170.182.13:3000";
+    //TODO: Remove this; it's just for testing.
+    private final String serverAddress = "http://137.22.164.195:3000";
+    private final String realServerAddress = "http://107.170.182.13:3000";
 
     private User curUser;
     private final List<Plantable> userPlantables = new ArrayList<Plantable>();
@@ -307,7 +309,7 @@ public class GameController
                 }
 
                 // TODO: Handle it returning unsuccessfully (response = ""), which it shouldn't do
-                if (response.equals("")) {
+                if (response.equals("false")) {
                     System.out.println("Problem with server planting trap");
                 }
                 return null;
@@ -330,6 +332,59 @@ public class GameController
     public void removeUserPlantable(Plantable toRemove)
     {
         userPlantables.remove(toRemove);
+        //Construct JSON object to send to server
+        JSONObject toSend = new JSONObject();
+        try {
+            toSend.put("id", toRemove.getPlantableId());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        //Make request - use an async task
+        class PostLocationTask extends AsyncTask<JSONObject, Void, Void>
+        {
+            @Override
+            protected Void doInBackground(JSONObject... jsonObjects) {
+                HttpURLConnection connection = null;
+                String response = "";
+                //Make the web request to fetch new data
+                try {
+                    // removemine
+                    HttpClient client = new DefaultHttpClient();
+                    HttpPost request = new HttpPost(serverAddress+"/api/removemine");
+                    request.setHeader("Content-Type", "application/json");
+                    request.setEntity(new StringEntity(jsonObjects[0].toString()));
+                    response = getStreamContent(client.execute(request).getEntity().getContent());
+
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                finally {
+                    if (connection != null)
+                    {
+                        connection.disconnect();
+                    }
+                }
+
+                // TODO: Handle it returning unsuccessfully (response = ""), which it shouldn't do
+                if (response.equals("false")) {
+                    System.out.println("Problem with server removing trap");
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void v)
+            {
+                // TODO: Notify GUI that myMines list has updated
+//                if (toUpdate != null)
+//                    toUpdate.notifyDataSetChanged();
+            }
+
+        }
+        new PostLocationTask().execute(toSend);
     }
 
     //Stub
