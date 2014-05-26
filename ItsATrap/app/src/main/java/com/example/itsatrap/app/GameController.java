@@ -49,6 +49,8 @@ public class GameController
 
     private LatLng lastRegisteredLocation;
 
+    private int maxPlantables = 12;
+
     public GameController(User curUser, LocationManager locManager)
     {
         this.curUser = curUser;
@@ -234,7 +236,13 @@ public class GameController
 
     }
 
+
     //Stub
+    public int getNumUserPlantablesLeft()
+    {
+        return maxPlantables - userPlantables.size();
+    }
+
     public void addUserPlantable(LatLng newLoc)
     {
         //These values should change...
@@ -263,7 +271,7 @@ public class GameController
                 try {
                     // /placemine - {location: {lat:___, lon:___}, user:___}  --> true if successful, false otherwise
                     HttpClient client = new DefaultHttpClient();
-                    HttpPost request = new HttpPost(serverAddress+"/api/placemine");
+                    HttpPost request = new HttpPost(serverAddress+"/api/plantmine");
                     request.setHeader("Content-Type", "application/json");
                     request.setEntity(new StringEntity(jsonObjects[0].toString()));
                     response = getStreamContent(client.execute(request).getEntity().getContent());
@@ -281,8 +289,8 @@ public class GameController
                 }
 
                 // TODO: Handle it returning false, which it shouldn't do
-                if (response.equals("false")) {
-
+                if (!response.equals("true")) {
+                    System.out.println("Problem with server planting trap");
                 }
                 return null;
             }

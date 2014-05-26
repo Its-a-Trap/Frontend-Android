@@ -116,15 +116,19 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     @Override
     public void onMapClick(LatLng latLng)
     {
-        if (plantableToPlace == null)
+        // If you're out of plantable items, don't let them do it
+        if (gameController.getNumUserPlantablesLeft() > 0)
         {
-            plantableToPlace = map.addMarker(new MarkerOptions().position(latLng).title("Place").alpha((float) 0.4));
-            plantableToPlace.showInfoWindow();
-        }
-        else
-        {
-            plantableToPlace.remove();
-            plantableToPlace = null;
+            if (plantableToPlace == null)
+            {
+                plantableToPlace = map.addMarker(new MarkerOptions().position(latLng).title("Place").alpha((float) 0.4));
+                plantableToPlace.showInfoWindow();
+            }
+            else
+            {
+                plantableToPlace.remove();
+                plantableToPlace = null;
+            }
         }
     }
 
