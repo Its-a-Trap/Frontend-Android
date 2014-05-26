@@ -7,4 +7,9 @@
     <string name="PrefsEmailString">UserEmail</string>
     <string name="SharedPrefName">ItsATrapPrefs</string>
 
+    <string name="placeTrap">Place</string>
+    <string name="yourTrap">Your trap</string>
+    <string name="watchOut">Watch out!</string>
+
+
 </resources>

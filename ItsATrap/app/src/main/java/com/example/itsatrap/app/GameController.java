@@ -260,10 +260,11 @@ public class GameController
         return maxPlantables - userPlantables.size();
     }
 
-    public void addUserPlantable(LatLng newLoc)
+    public Plantable addUserPlantable(LatLng newLoc)
     {
         //These values should change...
-        userPlantables.add(new Plantable("0", "0", newLoc, new Date(), 10000, 15));
+        Plantable newPlantable = new Plantable("0", "0", newLoc, new Date(), 10000, 15);
+        userPlantables.add(newPlantable);
         //Construct JSON object to send to server
         JSONObject toSend = new JSONObject();
         try {
@@ -305,8 +306,8 @@ public class GameController
                     }
                 }
 
-                // TODO: Handle it returning false, which it shouldn't do
-                if (!response.equals("true")) {
+                // TODO: Handle it returning unsuccessfully (response = ""), which it shouldn't do
+                if (response.equals("")) {
                     System.out.println("Problem with server planting trap");
                 }
                 return null;
@@ -322,6 +323,7 @@ public class GameController
 
         }
         new PostLocationTask().execute(toSend);
+        return newPlantable;
     }
 
     //Stub
