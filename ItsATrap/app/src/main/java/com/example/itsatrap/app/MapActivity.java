@@ -21,8 +21,11 @@ import com.google.android.gms.maps.model.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MapActivity extends Activity implements GoogleMap.OnMapClickListener,
         GoogleMap.OnInfoWindowClickListener, LocationListener, GoogleMap.OnMarkerClickListener
@@ -41,18 +44,35 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
     private List<Marker> currentlyDisplayedEnemyPlantables;
 
+    private Date lastSweeped;
+    private List<Marker> sweepMinesVisible;
+
+    private MapActivity thisref;
+
+    //The sweep cooldown, in minutes
+    private final int SWEEP_COOLDOWN = 30;
+    //The amount of time sweeped mines should be visible, in seconds
+    private final int SWEEP_DURATION = 30;
+    //The radius of the sweep, in meters
+    private final int SWEEP_RADIUS = 1000;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
+        //Initialize internal state information
         currentlyDisplayedEnemyPlantables = new ArrayList<Marker>();
+        sweepMinesVisible = new ArrayList<Marker>();
 
         plantableToPlace = null;
 
+        thisref = this;
+
         sharedPrefs = getSharedPreferences(getString(R.string.SharedPrefName), 0);
 
+        //Create the game controller object
         gameController = new GameController(new User(sharedPrefs.getString(getString(R.string.PrefsEmailString), ""), "537e48763511c15161a1ed9b", ""), (LocationManager) getSystemService(Context.LOCATION_SERVICE), this);
 
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -130,7 +150,14 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
     public void sweep(View view)
     {
-        List<Plantable> enemyTraps = gameController.getEnemyPlantablesWithinRadius(getCurLatLng(), 25);
+        if (lastSweeped != null && new Date().getTime() - lastSweeped.getTime() < 1000*60*SWEEP_COOLDOWN)
+        {
+            long minutesLeft = (new Date().getTime() - lastSweeped.getTime())/1000/60 + 1;
+            Toast.makeText(this, "Can't sweep again for "+minutesLeft+" minutes.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        List<Plantable> enemyTraps = gameController.getEnemyPlantablesWithinRadius(getCurLatLng(), SWEEP_RADIUS);
         // TODO: make swept enemy traps disappear eventually
         // (and what if they are triggered before disappearing?)
         for (Plantable plantable : enemyTraps)
@@ -139,8 +166,26 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                     .position(plantable.getLocation())
                     .title(getString(R.string.watchOut))
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
-            markerData.put(marker, plantable);
+            sweepMinesVisible.add(marker);
         }
+
+        lastSweeped = new Date();
+
+        Timer sweepTimer = new Timer(true);
+        Date afterSweepDuration = new Date();
+        afterSweepDuration.setTime(afterSweepDuration.getTime()+1000*SWEEP_DURATION);
+
+        sweepTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                thisref.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        thisref.removeSweepedMines();
+                    }
+                });
+            }
+        }, afterSweepDuration);
     }
 
     @Override
@@ -249,6 +294,14 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                         .title("It's a trap!")
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))));
             }
+        }
+    }
+
+    public void removeSweepedMines()
+    {
+        for (Marker sweepMine : sweepMinesVisible)
+        {
+            sweepMine.remove();
         }
     }
 

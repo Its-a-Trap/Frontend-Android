@@ -40,7 +40,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class GameController
 {
 
-    private final String serverAddress = "http://107.170.182.13:3000";
+    private final String serverAddress = "http://137.22.164.195:3000";//107.170.182.13:3000";
 
     private User curUser;
     private final List<Plantable> userPlantables = new ArrayList<Plantable>();
