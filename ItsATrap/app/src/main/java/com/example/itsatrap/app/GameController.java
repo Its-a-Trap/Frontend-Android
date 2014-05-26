@@ -6,6 +6,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.widget.ArrayAdapter;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -52,7 +53,10 @@ public class GameController
     //TODO: refactor so that the mapactivity handles network connections
     private MapActivity mapActivity;
 
+    private int maxPlantables = 12;
+
     public GameController(User curUser, LocationManager locManager, MapActivity mapActivity)
+
     {
         this.curUser = curUser;
         this.mapActivity = mapActivity;
@@ -243,108 +247,75 @@ public class GameController
 
     }
 
+
     //Stub
+    public int getNumUserPlantablesLeft()
+    {
+        return maxPlantables - userPlantables.size();
+    }
+
     public void addUserPlantable(LatLng newLoc)
     {
         //These values should change...
         userPlantables.add(new Plantable("0", "0", newLoc, new Date(), 10000, 15));
+        //Construct JSON object to send to server
+        JSONObject toSend = new JSONObject();
+        try {
+            JSONObject loc = new JSONObject();
+            loc.put("lat", newLoc.latitude);
+            loc.put("lon", newLoc.longitude);
+            toSend.put("location", loc);
+            //TODO: Possibly change to id?
+            toSend.put("user", curUser.getId());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
-//        highScoresLock.lock();
-//        final List<PlayerInfo> oldHighScores =  highScores != null ? highScores : new ArrayList<PlayerInfo>();
-//        highScores = null;
-//        highScoresLock.unlock();
-//
-//        enemyPlantablesLock.lock();
-//        final List<Plantable> oldEnemyPlantables = enemyPlantables != null ? enemyPlantables : new ArrayList<Plantable>();
-//        enemyPlantables = null;
-//        enemyPlantablesLock.unlock();
-//
-//        //Construct JSON object to send to server
-//        JSONObject toSend = new JSONObject();
-//        try {
-//            JSONObject loc = new JSONObject();
-//            loc.put("lat", curLoc.latitude);
-//            loc.put("lon", curLoc.longitude);
-//            toSend.put("location", loc);
-//            //TODO: Possibly change to id?
-//            toSend.put("user", curUser.getId());
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-//
-//        //Make request - use an async task
-//
-//        class PostLocationTask extends AsyncTask<JSONObject, Void, Void>
-//        {
-//
-//            @Override
-//            protected Void doInBackground(JSONObject... jsonObjects) {
-//                enemyPlantablesLock.lock();
-//                highScoresLock.lock();
-//                HttpURLConnection connection = null;
-//                String response = "";
-//                //Make the web request to fetch new data
-//                try {
-//                    HttpClient client = new DefaultHttpClient();
-//                    HttpPost request = new HttpPost(serverAddress+"/api/changearea");
-//                    request.setHeader("Content-Type", "application/json");
-//                    request.setEntity(new StringEntity(jsonObjects[0].toString()));
-//                    response = getStreamContent(client.execute(request).getEntity().getContent());
-//
-//                } catch (MalformedURLException e) {
-//                    e.printStackTrace();
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//                finally {
-//                    if (connection != null)
-//                    {
-//                        connection.disconnect();
-//                    }
-//                }
-//
-//                //Parse the data
-//                try {
-//                    JSONObject responseObject = new JSONObject(response);
-//                    JSONArray plantables = responseObject.getJSONArray("mines");
-//
-//                    oldEnemyPlantables.clear();
-//                    for (int i = 0; i < plantables.length(); ++i)
-//                    {
-//                        oldEnemyPlantables.add(new Plantable(plantables.getJSONObject(i)));
-//                    }
-//
-//                    JSONArray scores = responseObject.getJSONArray("scores");
-//                    oldHighScores.clear();
-//                    for (int i = 0; i < scores.length(); ++i)
-//                    {
-//                        oldHighScores.add(new PlayerInfo(scores.getJSONObject(i)));
-//                    }
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
-//
-//                //If we don't have new data to assign, they will be made empty
-//                enemyPlantables = oldEnemyPlantables;
-//                highScores = oldHighScores;
-//
-//                highScoresPopulated.signalAll();
-//
-//                enemyPlantablesLock.unlock();
-//                highScoresLock.unlock();
-//                return null;
-//            }
-//
-//            @Override
-//            protected void onPostExecute(Void v)
-//            {
+        //Make request - use an async task
+        class PostLocationTask extends AsyncTask<JSONObject, Void, Void>
+        {
+            @Override
+            protected Void doInBackground(JSONObject... jsonObjects) {
+                HttpURLConnection connection = null;
+                String response = "";
+                //Make the web request to fetch new data
+                try {
+                    // /placemine - {location: {lat:___, lon:___}, user:___}  --> true if successful, false otherwise
+                    HttpClient client = new DefaultHttpClient();
+                    HttpPost request = new HttpPost(serverAddress+"/api/plantmine");
+                    request.setHeader("Content-Type", "application/json");
+                    request.setEntity(new StringEntity(jsonObjects[0].toString()));
+                    response = getStreamContent(client.execute(request).getEntity().getContent());
+
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                finally {
+                    if (connection != null)
+                    {
+                        connection.disconnect();
+                    }
+                }
+
+                // TODO: Handle it returning false, which it shouldn't do
+                if (!response.equals("true")) {
+                    System.out.println("Problem with server planting trap");
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void v)
+            {
+                // TODO: Notify GUI that myMines list has updated
 //                if (toUpdate != null)
 //                    toUpdate.notifyDataSetChanged();
-//            }
-//
-//        }
-//
-//        new PostLocationTask().execute(toSend);
+            }
+
+        }
+        new PostLocationTask().execute(toSend);
     }
 
     //Stub
