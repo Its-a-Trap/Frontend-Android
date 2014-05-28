@@ -77,7 +77,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
     //TODO: Remove this; it's just for testing.
 //    private final String serverAddress = "http://137.22.164.195:3000";
-    private final String serverAddress = "http://107.170.182.13:3000";
+    public static final String serverAddress = "http://107.170.182.13:3000";
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -97,7 +97,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         sharedPrefs = getSharedPreferences(getString(R.string.SharedPrefName), 0);
 
         //Create the game controller object
-        gameController = new GameController(new User(sharedPrefs.getString(getString(R.string.PrefsEmailString), ""), "537e48763511c15161a1ed9b", ""), (LocationManager) getSystemService(Context.LOCATION_SERVICE), this);
+        gameController = new GameController(new User(sharedPrefs.getString(getString(R.string.PrefsEmailString), ""), sharedPrefs.getString(getString(R.string.PrefsIdString), ""), ""), (LocationManager) getSystemService(Context.LOCATION_SERVICE), this);
 
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawerList = (ListView) findViewById(R.id.left_drawer);

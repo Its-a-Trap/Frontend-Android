@@ -15,6 +15,9 @@ import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListe
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.plus.Plus;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
  * Created by carissa on 5/10/14.
  * Sample code drawn from https://developers.google.com/+/mobile/android/getting-started
@@ -123,12 +126,42 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
     protected void signInCompleted(String email)
     {
         //Save current user information
-        SharedPreferences.Editor editor = sharedPrefs.edit();
+        final SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putString(getString(R.string.PrefsEmailString), email);
         editor.commit();
 
-        Intent intent = new Intent(this, MapActivity.class);
-        startActivity(intent);
+        JSONObject toSend = new JSONObject();
+        try {
+            toSend.put("email", email);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        final LoginActivity thisref = this;
+
+        class GetIdTask extends PostJsonTask<String>
+        {
+
+            public GetIdTask(String serverAddress, String endpoint) {
+                super(serverAddress, endpoint);
+            }
+
+            @Override
+            protected String parseResponse(String response) {
+                //Apparently the id that's returned is NOT in a JSON object...
+                return response.replace("\"", "");
+            }
+
+            @Override
+            protected void onPostExecute(String id)
+            {
+                editor.putString(getString(R.string.PrefsIdString), id);
+                editor.commit();
+                Intent intent = new Intent(thisref, MapActivity.class);
+                startActivity(intent);
+            }
+        }
+        new GetIdTask(MapActivity.serverAddress, "/api/getuserid").execute(toSend);
     }
 
     @Override
