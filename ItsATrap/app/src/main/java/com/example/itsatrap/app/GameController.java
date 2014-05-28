@@ -40,9 +40,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class GameController
 {
 
-    //TODO: Remove this; it's just for testing.
-//    private final String serverAddress = "http://137.22.164.195:3000";
-    private final String serverAddress = "http://107.170.182.13:3000";
+
 
     private User curUser;
     private final List<Plantable> userPlantables = new ArrayList<Plantable>();
@@ -65,8 +63,6 @@ public class GameController
 
         Location curLocation = locManager.getLastKnownLocation(locManager.getBestProvider(new Criteria(), true));
         LatLng curLoc = new LatLng(curLocation.getLatitude(), curLocation.getLongitude());
-        getHighScoresAndMinesFromServer(curLoc);
-
     }
 
     public List<PlayerInfo> getHighScores()
@@ -79,28 +75,17 @@ public class GameController
         return userPlantables;
     }
 
-    /**
-     * Perform the necessary updates given that the user is now at the given location
-     * @param curLoc
-     */
-    public void updateLocation(LatLng curLoc)
-    {
-        //Currently we'll update the server's value for the location every time we've moved five miles.
-//        if ( lastRegisteredLocation != null && distanceBetween(curLoc, lastRegisteredLocation) > 8046.72)
-//        {
-            getHighScoresAndMinesFromServer(curLoc);
-//        }
-    }
+    public List<Plantable> getEnemyPlantables() { return enemyPlantables; }
 
-    public void collideWithEnemyMines(LatLng curLoc)
+    public User getUser() { return curUser; }
+
+    public void removeEnemyPlantable(Plantable toRemove)
     {
-        List<Plantable> possiblyExplodeds = checkForCollisions(curLoc);
-        for (Plantable toExplode : possiblyExplodeds)
+        synchronized (enemyPlantables)
         {
-            attemptToExplodePlantable(toExplode);
+            enemyPlantables.remove(toRemove);
         }
     }
-
 
     /*
         Returns a list of all enemy plantables within their radius of the provided location - used for detecting explosions
@@ -143,183 +128,6 @@ public class GameController
         }
     }
 
-    //TODO: Do something about all the errors this might throw
-    private void getHighScoresAndMinesFromServer(final LatLng curLoc)
-    {
-        //Construct JSON object to send to server
-        JSONObject toSend = new JSONObject();
-        try {
-            JSONObject loc = new JSONObject();
-            loc.put("lat", curLoc.latitude);
-            loc.put("lon", curLoc.longitude);
-            toSend.put("location", loc);
-            toSend.put("user", curUser.getId());
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        //Make request - use an async task
-
-        class PostLocationTask extends AsyncTask<JSONObject, Void, Void>
-        {
-            private MapActivity mapActivity;
-
-            public PostLocationTask(MapActivity mapActivity)
-            {
-                this.mapActivity = mapActivity;
-            }
-
-
-            @Override
-            protected Void doInBackground(JSONObject... jsonObjects) {
-                HttpURLConnection connection = null;
-                String response = "";
-                //Make the web request to fetch new data
-                try {
-                    HttpClient client = new DefaultHttpClient();
-                    HttpPost request = new HttpPost(serverAddress+"/api/changearea");
-                    request.setHeader("Content-Type", "application/json");
-                    request.setEntity(new StringEntity(jsonObjects[0].toString()));
-                    response = getStreamContent(client.execute(request).getEntity().getContent());
-
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                finally {
-                    if (connection != null)
-                    {
-                        connection.disconnect();
-                    }
-                }
-
-                //Parse the data
-                try {
-                    JSONObject responseObject = new JSONObject(response);
-                    JSONArray plantables = responseObject.getJSONArray("mines");
-                    JSONArray scores = responseObject.getJSONArray("scores");
-                    JSONArray myPlantables = responseObject.getJSONArray("myMines");
-
-                    synchronized (enemyPlantables)
-                    {
-                        enemyPlantables.clear();
-                        for (int i = 0; i < plantables.length(); ++i)
-                        {
-                            enemyPlantables.add(new Plantable(plantables.getJSONObject(i)));
-                        }
-                    }
-                    synchronized (userPlantables)
-                    {
-                        userPlantables.clear();
-                        for (int i = 0; i < myPlantables.length(); ++i)
-                        {
-                            userPlantables.add(new Plantable(myPlantables.getJSONObject(i)));
-                        }
-                    }
-                    synchronized (highScores)
-                    {
-                        highScores.clear();
-                        for (int i = 0; i < scores.length(); ++i)
-                        {
-                            highScores.add(new PlayerInfo(scores.getJSONObject(i)));
-                        }
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void v)
-            {
-                mapActivity.updateHighScores();
-                mapActivity.updateMyMines();
-                collideWithEnemyMines(curLoc);
-            }
-
-        }
-
-        new PostLocationTask(mapActivity).execute(toSend);
-
-
-        //Server magic goes here
-//        PlayerInfo[] hardCodedEntries = {new PlayerInfo("Jeff", 9001) , new PlayerInfo("DSM", 6), new PlayerInfo("Calder", 6), new PlayerInfo("Carissa", 6), new PlayerInfo("DermDerm", 5), new PlayerInfo("Tao", 5), new PlayerInfo("Carlton", 5), new PlayerInfo("Quinn", 5)};
-//        highScores = Arrays.asList(hardCodedEntries);
-//        enemyPlantables = new ArrayList<Plantable>();
-        lastRegisteredLocation = curLoc;
-    }
-
-    //Stub
-    private void attemptToExplodePlantable(final Plantable toExplode)
-    {
-        //Construct JSON object to send to server
-        JSONObject toSend = new JSONObject();
-        try {
-            toSend.put("user", curUser.getId());
-            toSend.put("id", toExplode.getPlantableId());
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        //Make request - use an async task
-
-        class PostExplodeTask extends AsyncTask<JSONObject, Void, Boolean>
-        {
-            private MapActivity mapActivity;
-
-            public PostExplodeTask(MapActivity mapActivity)
-            {
-                this.mapActivity = mapActivity;
-            }
-
-
-            @Override
-            protected Boolean doInBackground(JSONObject... jsonObjects) {
-                HttpURLConnection connection = null;
-                String response = "";
-                //Make the web request to fetch new data
-                try {
-                    HttpClient client = new DefaultHttpClient();
-                    HttpPost request = new HttpPost(serverAddress+"/api/explodemine");
-                    request.setHeader("Content-Type", "application/json");
-                    request.setEntity(new StringEntity(jsonObjects[0].toString()));
-                    response = getStreamContent(client.execute(request).getEntity().getContent());
-
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                finally {
-                    if (connection != null)
-                    {
-                        connection.disconnect();
-                    }
-                }
-
-                //'Parse' the data
-                return response.equals("true");
-            }
-
-            @Override
-            protected void onPostExecute(Boolean exploded)
-            {
-                if (exploded)
-                {
-                    mapActivity.displayExploded();
-                    enemyPlantables.remove(toExplode);
-                }
-            }
-
-        }
-
-        new PostExplodeTask(mapActivity).execute(toSend);
-    }
-
-
     //Stub
     public int getNumUserPlantablesLeft()
     {
@@ -329,73 +137,12 @@ public class GameController
         }
     }
 
-    public Plantable addUserPlantable(LatLng newLoc)
+    public void addUserPlantable(Plantable toAdd)
     {
-        //These values should change...
-        Plantable newPlantable = new Plantable("0", "0", newLoc, new Date(), 10000, 2);
         synchronized (userPlantables)
         {
-            userPlantables.add(newPlantable);
+            userPlantables.add(toAdd);
         }
-        //Construct JSON object to send to server
-        JSONObject toSend = new JSONObject();
-        try {
-            JSONObject loc = new JSONObject();
-            loc.put("lat", newLoc.latitude);
-            loc.put("lon", newLoc.longitude);
-            toSend.put("location", loc);
-            //TODO: Possibly change to id?
-            toSend.put("user", curUser.getId());
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        //Make request - use an async task
-        class PostLocationTask extends AsyncTask<JSONObject, Void, Void>
-        {
-            @Override
-            protected Void doInBackground(JSONObject... jsonObjects) {
-                HttpURLConnection connection = null;
-                String response = "";
-                //Make the web request to fetch new data
-                try {
-                    // /placemine - {location: {lat:___, lon:___}, user:___}  --> true if successful, false otherwise
-                    HttpClient client = new DefaultHttpClient();
-                    HttpPost request = new HttpPost(serverAddress+"/api/placemine");
-                    request.setHeader("Content-Type", "application/json");
-                    request.setEntity(new StringEntity(jsonObjects[0].toString()));
-                    response = getStreamContent(client.execute(request).getEntity().getContent());
-
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                finally {
-                    if (connection != null)
-                    {
-                        connection.disconnect();
-                    }
-                }
-
-                // TODO: Handle it returning unsuccessfully (response = ""), which it shouldn't do
-                if (response.equals("false")) {
-                    System.out.println("Problem with server planting trap");
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void v)
-            {
-                // TODO: Notify GUI that myMines list has updated
-//                if (toUpdate != null)
-//                    toUpdate.notifyDataSetChanged();
-            }
-
-        }
-        new PostLocationTask().execute(toSend);
-        return newPlantable;
     }
 
     //Stub
@@ -404,73 +151,6 @@ public class GameController
         synchronized (userPlantables)
         {
             userPlantables.remove(toRemove);
-        }
-        //Construct JSON object to send to server
-        JSONObject toSend = new JSONObject();
-        try {
-            toSend.put("id", toRemove.getPlantableId());
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        //Make request - use an async task
-        class PostLocationTask extends AsyncTask<JSONObject, Void, Void>
-        {
-            @Override
-            protected Void doInBackground(JSONObject... jsonObjects) {
-                HttpURLConnection connection = null;
-                String response = "";
-                //Make the web request to fetch new data
-                try {
-                    // removemine
-                    HttpClient client = new DefaultHttpClient();
-                    HttpPost request = new HttpPost(serverAddress+"/api/removemine");
-                    request.setHeader("Content-Type", "application/json");
-                    request.setEntity(new StringEntity(jsonObjects[0].toString()));
-                    response = getStreamContent(client.execute(request).getEntity().getContent());
-
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                finally {
-                    if (connection != null)
-                    {
-                        connection.disconnect();
-                    }
-                }
-
-                // TODO: Handle it returning unsuccessfully (response = ""), which it shouldn't do
-                if (response.equals("false")) {
-                    System.out.println("Problem with server removing trap");
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void v)
-            {
-                // TODO: Notify GUI that myMines list has updated
-//                if (toUpdate != null)
-//                    toUpdate.notifyDataSetChanged();
-            }
-
-        }
-        new PostLocationTask().execute(toSend);
-    }
-
-    //Stub
-    public void removeUserPlantable(String idToRemove)
-    {
-        synchronized (userPlantables)
-        {
-            for (int i = 0; i < userPlantables.size(); ++i) {
-                if (userPlantables.get(i).getPlantableId() == idToRemove) {
-                    userPlantables.remove(i);
-                    return;
-                }
-            }
         }
     }
 
@@ -481,19 +161,6 @@ public class GameController
         return distance[0];
     }
 
-    public static String getStreamContent(InputStream stream)
-    {
-        StringBuilder builder = new StringBuilder();
-        int c;
-        try {
-            while ((c = stream.read()) != -1 )
-            {
-                builder.append((char)c);
-            }
 
-        } catch (IOException e) {
-        }
-        return builder.toString();
-    }
 
 }
