@@ -97,7 +97,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         sharedPrefs = getSharedPreferences(getString(R.string.SharedPrefName), 0);
 
         //Create the game controller object
-        gameController = new GameController(new User(sharedPrefs.getString(getString(R.string.PrefsEmailString), ""), sharedPrefs.getString(getString(R.string.PrefsIdString), ""), ""), (LocationManager) getSystemService(Context.LOCATION_SERVICE), this);
+        gameController = new GameController(new User(sharedPrefs.getString(getString(R.string.PrefsEmailString), ""), sharedPrefs.getString(getString(R.string.PrefsIdString), ""), sharedPrefs.getString(getString(R.string.PrefsNameString), "")), (LocationManager) getSystemService(Context.LOCATION_SERVICE), this);
 
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawerList = (ListView) findViewById(R.id.left_drawer);

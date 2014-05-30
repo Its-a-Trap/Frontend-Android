@@ -128,6 +128,8 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
         //Save current user information
         final SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putString(getString(R.string.PrefsEmailString), email);
+        if (name != null)
+            editor.putString(getString(R.string.PrefsNameString), name);
         editor.commit();
 
         JSONObject toSend = new JSONObject();
