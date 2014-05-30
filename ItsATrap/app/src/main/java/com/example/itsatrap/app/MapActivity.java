@@ -2,12 +2,14 @@ package com.example.itsatrap.app;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Criteria;
 import android.location.LocationListener;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.location.Location;
 import android.location.LocationManager;
@@ -298,9 +300,15 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         }
     }
 
-    public void displayExploded()
+    public void displayExploded(String name)
     {
-        Toast.makeText(this, "You have been trapped.", Toast.LENGTH_SHORT).show();
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
+                .setSmallIcon(R.drawable.its_a_trap_icon)
+                .setContentTitle("You've been trapped!")
+                .setContentText("You have been trapped by "+name+". You lost 50 points.");
+
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.notify(0, mBuilder.build());
     }
 
     /*
@@ -449,26 +457,38 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                 e.printStackTrace();
             }
 
-            class PostExplodeTask extends PostJsonTask<Boolean>
+            class PostExplodeTask extends PostJsonTask<String>
             {
                 public PostExplodeTask(String serverAddress, String endpoint) {
                     super(serverAddress, endpoint);
                 }
 
+                /**
+                 *
+                 * @param response
+                 * @return Null if there explosion failed
+                 */
                 @Override
-                protected Boolean parseResponse(String response) {
-                    if (response.equals("true"))
-                        return new Boolean(true);
-                    else
-                        return new Boolean(false);
+                protected String parseResponse(String response) {
+                    try {
+                        JSONObject responseObject = new JSONObject(response);
+                        boolean success = responseObject.getBoolean("success");
+                        if (success)
+                        {
+                            return responseObject.getString("ownerName");
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    return null;
                 }
 
                 @Override
-                protected void onPostExecute(Boolean exploded)
+                protected void onPostExecute(String exploded)
                 {
-                    if (exploded)
+                    if (exploded != null)
                     {
-                        displayExploded();
+                        displayExploded(exploded);
                         gameController.removeEnemyPlantable(toExplode);
                     }
                 }
