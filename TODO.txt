@@ -2,13 +2,13 @@ TO DO:
 
 - Fix place and remove bug???
 - Hook up scores
-    - When your traps are triggered
-    - When you are trapped???
-    - Display score on map view, perhaps?
+    - Display score on map view
     - Scores view centers on you
 - When you are trapped, stuff happens
     - You're notified of who set the trap you hit
     - You lose points?
+- When you trap someone, stuff happens
+    - You're notified & gain points
 - Gamification / Graphic qualities
     - Black and white grainy map + mine vibrates into place and kachunks into place
     - When you open the app and someone has tripped one of your mines, you see it increase your score and get a notification or something
@@ -17,12 +17,28 @@ TO DO:
     - Have a cooldown display
     - Maybe indicate how long you're going to get to see them (have them fade out?)
 - Kill you when you close the app
-- Settings...do something with 'em --> Tutorial
+- Get rid of settings & toolbar
 - Several of my testers tried to click the “mines left” icon to place a mine. We should make it less clickable, or make it do something
 - Mines that have been placed but not confirmed should disappear when they’re scrolled off-screen.
 - Tutorial
+- Mines expire / go rogue
+
+EASY QUICK:
+- Change sweep radius
 
 LOW PRIORITY:
 - Other login buttons?
 - How to show a location-based demo (cheesy video???)
 - Sweep is device-specific, shouldn't be
+
+
+-------------------------
+Game Rules / Behaviors
+- When you die:
+    - Notification (android apps can do it) + trappy sound: "You've been trapped by <person>'s trap! -50 points"
+    - Lose 50 points
+
+- When you kill someone:
+    - Notification + happy sound : "You trapped <person>! +100 points!"
+    - Gain 100 points
+
