@@ -642,6 +642,9 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         return curLoc;
     }
 
-
+    public void pullDrawerOut(View view)
+    {
+        drawerLayout.openDrawer(drawerList);
+    }
 
 }
