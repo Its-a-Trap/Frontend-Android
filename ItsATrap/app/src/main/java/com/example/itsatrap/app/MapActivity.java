@@ -112,6 +112,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         // Set the adapter for the list view
         listAdapter = new ScoreArrayAdapter(this, R.layout.drawer_list_item, gameController.getHighScores());
         drawerList.setAdapter(listAdapter);
+        drawerLayout.setScrimColor(getResources().getColor(R.color.drawer_scrim));
         // Get a handle to the Map Fragment
         map = ((MapFragment) getFragmentManager()
                 .findFragmentById(R.id.map)).getMap();
@@ -149,6 +150,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
     public void onStart()
     {
+        super.onStart();
         killers.clear();
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.cancel(0);

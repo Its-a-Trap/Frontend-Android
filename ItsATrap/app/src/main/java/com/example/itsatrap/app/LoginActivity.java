@@ -99,7 +99,7 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
      */
     public void login_facebook(View view)
     {
-        signInCompleted("maegereg@gmail.com", null);
+        signInCompleted("maegereg@gmail.com", "'Steve'");
     }
 
     /**
@@ -116,7 +116,7 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
      */
     public void login_twitter(View view)
     {
-        signInCompleted("maegereg@gmail.com", null);
+        signInCompleted("maegereg@gmail.com", "'Steve'");
     }
 
     /**
