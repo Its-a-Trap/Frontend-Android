@@ -99,7 +99,7 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
      */
     public void login_facebook(View view)
     {
-        signInCompleted("maegereg@gmail.com");
+        signInCompleted("maegereg@gmail.com", null);
     }
 
     /**
@@ -116,14 +116,14 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
      */
     public void login_twitter(View view)
     {
-        signInCompleted("maegereg@gmail.com");
+        signInCompleted("maegereg@gmail.com", null);
     }
 
     /**
      * Method to be called once some sort of sign in has been completed. Sets the username and moves to the next screen
      * @param email
      */
-    protected void signInCompleted(String email)
+    protected void signInCompleted(String email, String name)
     {
         //Save current user information
         final SharedPreferences.Editor editor = sharedPrefs.edit();
@@ -133,6 +133,8 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
         JSONObject toSend = new JSONObject();
         try {
             toSend.put("email", email);
+            if (name != null)
+                toSend.put("name", name);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -169,9 +171,10 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
     {
 
         String email = Plus.AccountApi.getAccountName(gClient);
+        String name = Plus.PeopleApi.getCurrentPerson(gClient).getDisplayName();
 
         Toast.makeText(getApplicationContext(), email+" is connected!", Toast.LENGTH_SHORT).show();
-        signInCompleted(email);
+        signInCompleted(email, name);
     }
 
     @Override
