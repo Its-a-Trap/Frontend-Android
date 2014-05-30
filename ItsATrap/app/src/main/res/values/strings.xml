@@ -11,6 +11,7 @@
     <string name="yourTrap">Remove?</string>
     <string name="watchOut">Watch out!</string>
     <string name="PrefsIdString">UserId</string>
+    <string name="PrefsNameString">UserName</string>
 
 
 </resources>
