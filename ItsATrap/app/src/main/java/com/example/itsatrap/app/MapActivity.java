@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -68,6 +69,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
     private LatLng lastLocation;
 
+    private HashSet<String> killers;
+
     //The sweep cooldown, in minutes
     private final int SWEEP_COOLDOWN = 30;
     //The amount of time sweeped mines should be visible, in seconds
@@ -90,6 +93,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         //Initialize internal state information
         currentlyDisplayedEnemyPlantables = new ArrayList<Marker>();
         sweepMinesVisible = new ArrayList<Marker>();
+
+        killers = new HashSet<String>();
 
         plantableToPlace = null;
         removingPlantable = false;
@@ -141,6 +146,14 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
         updateLocation(getCurLatLng());
     }
+
+    public void onStart()
+    {
+        killers.clear();
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.cancel(0);
+    }
+
 
     /*
     ---------------- Override event listeners
@@ -306,6 +319,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                 .setSmallIcon(R.drawable.its_a_trap_icon)
                 .setContentTitle("You've been trapped!")
                 .setContentText("You have been trapped by "+name+". You lost 50 points.");
+        killers.add(name);
 
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.notify(0, mBuilder.build());
