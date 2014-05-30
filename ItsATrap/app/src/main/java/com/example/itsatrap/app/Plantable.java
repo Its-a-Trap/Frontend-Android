@@ -23,17 +23,13 @@ public class Plantable
 //    //In meters
     private float radius;
 
-    public Plantable(JSONObject plantable)
-    {
-        try {
-            this.plantableId = plantable.getString("id");
-            this.ownerId = plantable.getString("owner");
-            this.isActive = true;
-            JSONObject location = plantable.getJSONObject("location");
-            this.location = new LatLng(location.getDouble("lat"), location.getDouble("lon"));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+    public Plantable(JSONObject plantable) throws JSONException {
+        this.plantableId = plantable.getString("id");
+        this.ownerId = plantable.getString("owner");
+        this.isActive = true;
+        JSONObject location = plantable.getJSONObject("location");
+        this.location = new LatLng(location.getDouble("lat"), location.getDouble("lon"));
+
 
         this.radius = 2;
     }
