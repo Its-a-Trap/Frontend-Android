@@ -45,6 +45,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     private DrawerLayout drawerLayout;
     private ListView drawerList;
     private ArrayAdapter listAdapter;
+    private int yourScoreIndex;
+    private int yourScore;
 
     private GoogleMap map;
     private GameController gameController;
@@ -75,8 +77,6 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     //Register a new location with the server after travelling this far (currently 5 miles)
     private final double UPDATE_DISTANCE = 8046.72;
 
-    //TODO: Remove this; it's just for testing.
-//    private final String serverAddress = "http://137.22.164.195:3000";
     public static final String serverAddress = "http://107.170.182.13:3000";
 
     @Override
@@ -127,6 +127,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             map.setOnInfoWindowClickListener(this);
             map.setOnMarkerClickListener(this);
 
+
             //Set this activity to listen for location changes
             Criteria criteria = new Criteria();
             criteria.setAccuracy(Criteria.ACCURACY_FINE);
@@ -141,6 +142,28 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         instructions.show();
 
         updateLocation(getCurLatLng());
+
+        drawerLayout.setDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset) {
+
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                drawerList.setSelection(yourScoreIndex);
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+
+            }
+        });
     }
 
     public void onStart()
@@ -452,6 +475,9 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                         JSONArray plantables = responseObject.getJSONArray("mines");
                         JSONArray scores = responseObject.getJSONArray("scores");
                         JSONArray myPlantables = responseObject.getJSONArray("myMines");
+                        yourScore = responseObject.getInt("myScore");
+                        yourScoreIndex = responseObject.getInt("myScoreIndex");
+
 
                         //Update the enemy plantables
                         synchronized (gameController.getEnemyPlantables())
@@ -492,6 +518,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                     updateHighScores();
                     updateMyMines();
                     checkForCollisions(curLoc);
+                    ((TextView) findViewById(R.id.your_score))
+                            .setText(String.valueOf(yourScore));
                 }
             }
 
@@ -707,6 +735,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
     public void pullDrawerOut(View view)
     {
+        drawerList.setSelection(yourScoreIndex);
         drawerLayout.openDrawer(drawerList);
     }
 

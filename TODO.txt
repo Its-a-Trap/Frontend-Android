@@ -1,7 +1,7 @@
 TO DO:
 
 - Fix place and remove bug???
-- Hook up scores
+- Scores stuff
     - Display score on map view
     - Scores view centers on you
 - When you are trapped, stuff happens
@@ -29,6 +29,8 @@ LOW PRIORITY:
 - How to show a location-based demo (cheesy video???)
 - Sweep is device-specific, shouldn't be
 
+CONCERNS:
+- Will this work on Jeff's phone?
 
 -------------------------
 Game Rules / Behaviors
