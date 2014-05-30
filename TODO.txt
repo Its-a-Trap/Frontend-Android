@@ -5,7 +5,6 @@ TO DO:
     - Display score on map view
     - Scores view centers on you
 - When you are trapped, stuff happens
-    - You're notified of who set the trap you hit
     - You lose points?
 - When you trap someone, stuff happens
     - You're notified & gain points
@@ -17,7 +16,6 @@ TO DO:
     - Have a cooldown display
     - Maybe indicate how long you're going to get to see them (have them fade out?)
 - Kill you when you close the app
-- Get rid of settings & toolbar
 - Several of my testers tried to click the “mines left” icon to place a mine. We should make it less clickable, or make it do something
 - Mines that have been placed but not confirmed should disappear when they’re scrolled off-screen.
 - Tutorial
