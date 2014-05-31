@@ -53,7 +53,7 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
     // For Push
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     GoogleCloudMessaging gcm;
-    String SENDER_ID = "480616193792"; // From our Project Number in the Google Developer's Console
+    String SENDER_ID = "301006106178"; // From our Project Number in the Google Developer's Console
     Context context;
     String regid;
 
