@@ -1,5 +1,5 @@
 *.class
 *.jar
 *.MF
-
 *.store
+/ItsATrap/libraries/facebook/build/

@@ -23,6 +23,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.amlcurran.showcaseview.ShowcaseView;
+import com.github.amlcurran.showcaseview.targets.ActionViewTarget;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
 
@@ -141,6 +143,10 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         instructions.setMessage("Welcome to It's a trap. Your goal is to plant traps that nearby players will walk over. Click on the map to place a trap - you can place up to 12. You can sweep to discover enemy traps. You will be notified if you walk over an enemy trap. Swipe from the left side of the screen to view high scores.");
         instructions.setPositiveButton("Ok", null);
         instructions.show();
+
+        //TODO: Fix this.
+        new ShowcaseView().Builder(this)
+                .setTarget(new ActionViewTarget(this, ActionViewTarget.Type.HOME))
 
         updateLocation(getCurLatLng());
 
