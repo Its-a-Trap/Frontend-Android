@@ -25,6 +25,7 @@ import android.widget.Toast;
 
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.ActionViewTarget;
+import com.github.amlcurran.showcaseview.targets.ViewTarget;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
 
@@ -138,15 +139,13 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         }
 
         //Do the tutorial
-        AlertDialog.Builder instructions = new AlertDialog.Builder(this);
-        instructions.setTitle("Instructions");
-        instructions.setMessage("Welcome to It's a trap. Your goal is to plant traps that nearby players will walk over. Click on the map to place a trap - you can place up to 12. You can sweep to discover enemy traps. You will be notified if you walk over an enemy trap. Swipe from the left side of the screen to view high scores.");
-        instructions.setPositiveButton("Ok", null);
-        instructions.show();
+//        AlertDialog.Builder instructions = new AlertDialog.Builder(this);
+//        instructions.setTitle("Instructions");
+//        instructions.setMessage("Welcome to It's a trap. Your goal is to plant traps that nearby players will walk over. Click on the map to place a trap - you can place up to 12. You can sweep to discover enemy traps. You will be notified if you walk over an enemy trap. Swipe from the left side of the screen to view high scores.");
+//        instructions.setPositiveButton("Ok", null);
+//        instructions.show();
 
-        //TODO: Fix this.
-        new ShowcaseView().Builder(this)
-                .setTarget(new ActionViewTarget(this, ActionViewTarget.Type.HOME))
+        showTutorial();
 
         updateLocation(getCurLatLng());
 
@@ -406,6 +405,15 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.notify(0, mBuilder.build());
+    }
+
+    public void showTutorial()
+    {
+        ShowcaseView sv = new ShowcaseView.Builder(this)
+//                .setTarget(new ViewTarget(R.id.sweep_button, this))
+                .setContentTitle("Title")
+                .setContentText("Text")
+                .build();
     }
 
     /*
