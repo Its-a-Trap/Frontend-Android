@@ -39,7 +39,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class MapActivity extends Activity implements GoogleMap.OnMapClickListener,
-        GoogleMap.OnInfoWindowClickListener, LocationListener, GoogleMap.OnMarkerClickListener
+        GoogleMap.OnInfoWindowClickListener, LocationListener, GoogleMap.OnMarkerClickListener, GoogleMap.OnCameraChangeListener
 {
 
     private DrawerLayout drawerLayout;
@@ -126,6 +126,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             map.setOnMapClickListener(this);
             map.setOnInfoWindowClickListener(this);
             map.setOnMarkerClickListener(this);
+            map.setOnCameraChangeListener(this);
 
 
             //Set this activity to listen for location changes
@@ -262,12 +263,14 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     @Override
     public boolean onMarkerClick(Marker marker)
     {
-        boolean sameMarker = marker.getPosition().equals(plantableToPlace.getPosition());
+        boolean sameMarker = plantableToPlace != null && marker.getPosition().equals(plantableToPlace.getPosition());
+        //Always remove the pending marker
         if (plantableToPlace != null)
         {
             plantableToPlace.remove();
             plantableToPlace = null;
         }
+        //If it's a different marker, show the remove API
         if (!sameMarker) {
             marker.showInfoWindow();
             removingPlantable = true;
@@ -278,6 +281,15 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     @Override
     public void onLocationChanged(Location location) {
         updateLocation(new LatLng(location.getLatitude(), location.getLongitude()));
+    }
+
+    @Override
+    public void onCameraChange(CameraPosition cameraPosition) {
+        if (plantableToPlace != null)
+        {
+            plantableToPlace.remove();
+            plantableToPlace = null;
+        }
     }
 
     @Override
@@ -742,4 +754,15 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         drawerLayout.openDrawer(drawerList);
     }
 
+    /**
+     * Returns whether or not the provided marker is currently visible in the map
+     * Technically this might return true if the marker isn't strictly visible due to projections and non-vertical orientations,
+     * but since this map has non-vertical orientations disabled and
+     * @param toCheck
+     * @return
+     */
+    protected boolean markerVisible(Marker toCheck)
+    {
+        return map.getProjection().getVisibleRegion().latLngBounds.contains(toCheck.getPosition());
+    }
 }
