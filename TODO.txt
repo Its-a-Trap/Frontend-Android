@@ -1,25 +1,19 @@
 TO DO:
 
-- Fix place and remove bug???
-- Scores stuff
-    - Display score on map view
-    - Scores view centers on you
-- When you are trapped, stuff happens
-    - You lose points?
-- When you trap someone, stuff happens
-    - You're notified & gain points
+- When you trap someone/are trapped, maybe be notified of when the trap was placed?
 - Gamification / Graphic qualities
-    - Black and white grainy map + mine vibrates into place and kachunks into place
-    - When you open the app and someone has tripped one of your mines, you see it increase your score and get a notification or something
+    - Black and white grainy map + trap vibrates into place and kachunks into place
+    - When you open the app and someone has tripped one of your traps, you see it increase your score and get a notification or something
     - Cool sonar graphic for sweep
 - Sweep
     - Have a cooldown display
     - Maybe indicate how long you're going to get to see them (have them fade out?)
 - Kill you when you close the app
-- Several of my testers tried to click the “mines left” icon to place a mine. We should make it less clickable, or make it do something
-- Mines that have been placed but not confirmed should disappear when they’re scrolled off-screen.
+- Several of my testers tried to click the “traps left” icon to place a trap. We should make it less clickable, or make it do something
+- traps that have been placed but not confirmed should disappear when they’re scrolled off-screen. Also, when you place a trap, then move the map, then click the trap again, the icon is deleted, but the "Place?" dialogue remains.
 - Tutorial
-- Mines expire / go rogue
+- traps expire / go rogue
+
 
 EASY QUICK:
 - Change sweep radius
@@ -30,7 +24,7 @@ LOW PRIORITY:
 - Sweep is device-specific, shouldn't be
 
 CONCERNS:
-- Will this work on Jeff's phone?
+- Will this work on Jeff's phone? 
 
 -------------------------
 Game Rules / Behaviors
