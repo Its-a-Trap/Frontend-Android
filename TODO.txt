@@ -10,7 +10,6 @@ TO DO:
     - Maybe indicate how long you're going to get to see them (have them fade out?)
 - Kill you when you close the app
 - Several of my testers tried to click the “traps left” icon to place a trap. We should make it less clickable, or make it do something
-- traps that have been placed but not confirmed should disappear when they’re scrolled off-screen. Also, when you place a trap, then move the map, then click the trap again, the icon is deleted, but the "Place?" dialogue remains.
 - Tutorial
 - traps expire / go rogue
 
