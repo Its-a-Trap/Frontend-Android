@@ -262,14 +262,17 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     @Override
     public boolean onMarkerClick(Marker marker)
     {
-            removingPlantable = true;
-            if (plantableToPlace != null)
-            {
-                plantableToPlace.remove();
-                plantableToPlace = null;
-            }
+        boolean sameMarker = marker.getPosition().equals(plantableToPlace.getPosition());
+        if (plantableToPlace != null)
+        {
+            plantableToPlace.remove();
+            plantableToPlace = null;
+        }
+        if (!sameMarker) {
             marker.showInfoWindow();
-            return true;
+            removingPlantable = true;
+        }
+        return true;
     }
 
     @Override
