@@ -419,10 +419,22 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
     public void showTutorial()
     {
-        ShowcaseView sv = new ShowcaseView.Builder(this)
-//                .setTarget(new ViewTarget(R.id.sweep_button, this))
-                .setContentTitle("Title")
-                .setContentText("Text")
+        ShowcaseView highScores = new ShowcaseView.Builder(this)
+                .setTarget(new ViewTarget(R.id.drawer_button, this))
+                .setContentTitle("High Scores")
+                .setContentText("Click this button, or swipe from the left part of the screen to see high scores.")
+                .build();
+        highScores.hide();
+
+        ShowcaseView welcome = new ShowcaseView.Builder(this)
+                .setContentTitle("Welcome")
+                .setContentText("It's a trap is a game of cunning and deception. Earn points by placing traps where other people will walk over them, and avoid getting trapped yourself.")
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                    }
+                })
                 .build();
     }
 
