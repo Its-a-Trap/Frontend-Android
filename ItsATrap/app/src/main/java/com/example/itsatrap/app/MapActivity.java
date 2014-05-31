@@ -8,13 +8,17 @@ import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.LocationListener;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.location.Location;
 import android.location.LocationManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,6 +30,9 @@ import android.widget.Toast;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.ActionViewTarget;
 import com.github.amlcurran.showcaseview.targets.ViewTarget;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
 
@@ -33,6 +40,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -81,6 +89,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     private final double UPDATE_DISTANCE = 8046.72;
 
     public static final String serverAddress = "http://107.170.182.13:3000";
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -467,7 +477,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     }
 
     /**
-     * Handles calling the changelocation method on the server, updating the current lists of user mines,
+     * Handles calling the changearea method on the server, updating the current lists of user mines,
      * enemy mines and high scores
      * @param curLoc The current location of the user
      */
@@ -485,6 +495,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                 loc.put("lat", curLoc.latitude);
                 loc.put("lon", curLoc.longitude);
                 toSend.put("location", loc);
+                toSend.put("token", sharedPrefs.getString("RegId",""));
                 toSend.put("user", gameController.getUser().getId());
             } catch (JSONException e) {
                 e.printStackTrace();
