@@ -184,6 +184,8 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
                     Log.d("RegId",regid);
                 } catch (IOException e) {
                     editor.putBoolean("RegSuccess",false);
+                    Log.d("RegId","failed.");
+
                     finish();
                 }
 
