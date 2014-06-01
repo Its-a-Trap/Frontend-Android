@@ -12,6 +12,7 @@
     <string name="watchOut">Watch out!</string>
     <string name="PrefsIdString">UserId</string>
     <string name="PrefsNameString">UserName</string>
+    <string name="TutorialCompleteFlag">TutorialComplete</string>
 
 
 </resources>
