@@ -43,6 +43,7 @@ import java.util.TimerTask;
 public class MapActivity extends Activity implements GoogleMap.OnMapClickListener,
         GoogleMap.OnInfoWindowClickListener, LocationListener, GoogleMap.OnMarkerClickListener, GoogleMap.OnCameraChangeListener
 {
+    private MapActivity self;
 
     private DrawerLayout drawerLayout;
     private ListView drawerList;
@@ -84,6 +85,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+        self = this;
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
@@ -144,10 +147,6 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         instructions.setPositiveButton("Ok", null);
         instructions.show();
 
-        //TODO: Fix this.
-        new ShowcaseView().Builder(this)
-                .setTarget(new ActionViewTarget(this, ActionViewTarget.Type.HOME))
-
         updateLocation(getCurLatLng());
 
         drawerLayout.setDrawerListener(new DrawerLayout.DrawerListener() {
@@ -158,7 +157,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
             @Override
             public void onDrawerOpened(View drawerView) {
-                drawerList.setSelection(yourScoreIndex);
+
+                drawerList.smoothScrollToPosition(yourScoreIndex);
             }
 
             @Override
@@ -655,6 +655,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                 else
                 {
                     //If we failed to add, and there's no pending plantable re-make this one pending
+                    Toast.makeText(self, "Problem with server, trap wasn't placed", Toast.LENGTH_SHORT).show();
+
                     if (plantableToPlace == null)
                     {
                         marker.setAlpha((float) 0.5);
@@ -722,11 +724,13 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                 //If we didn't succeed, we need to put it back on the map because it's not gone
                 if (!success)
                 {
+                    Toast.makeText(self, "Problem with server, trap wasn't removed", Toast.LENGTH_SHORT).show();
                     markerData.put(map.addMarker(new MarkerOptions()
                             .position(toRemove.getLocation())
                             .title(getString(R.string.yourTrap))
                             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))),
                     toRemove);
+
                 }
                 //Update the data structure for success
                 else
@@ -756,7 +760,6 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
     public void pullDrawerOut(View view)
     {
-        drawerList.setSelection(yourScoreIndex);
         drawerLayout.openDrawer(drawerList);
     }
 
