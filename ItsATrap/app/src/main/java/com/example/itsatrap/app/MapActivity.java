@@ -124,7 +124,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         findViewById(R.id.sweep_button).setOnClickListener(this);
 
         //Create the game controller object
-        gameController = new GameController(new User(sharedPrefs.getString(getString(R.string.PrefsEmailString), ""), sharedPrefs.getString(getString(R.string.PrefsIdString), ""), sharedPrefs.getString(getString(R.string.PrefsNameString), "")), (LocationManager) getSystemService(Context.LOCATION_SERVICE), this);
+        gameController = new GameController(new User(sharedPrefs.getString(getString(R.string.PrefsEmailString), ""), sharedPrefs.getString(getString(R.string.PrefsIdString), ""), sharedPrefs.getString(getString(R.string.PrefsNameString), "")), this);
 
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawerList = (ListView) findViewById(R.id.left_drawer);
@@ -134,18 +134,26 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         drawerList.setAdapter(listAdapter);
         drawerLayout.setScrimColor(getResources().getColor(R.color.drawer_scrim));
         // Get a handle to the Map Fragment
-        map = ((MapFragment) getFragmentManager()
-                .findFragmentById(R.id.map)).getMap();
+        map = ((MapFragment)getFragmentManager().findFragmentById(R.id.map)).getMap();
 
         markerData = new HashMap<Marker, Plantable>();
 
-        if  (map != null)
+        if (map != null)
         {
+            // Subscribe to location change notifications
+            Criteria criteria = new Criteria();
+            criteria.setAccuracy(Criteria.ACCURACY_FINE);
             LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            LatLng curLoc = getCurLatLng();
+            locationManager.requestLocationUpdates(1000, 1, criteria, this, null);
 
-            map.setMyLocationEnabled(true);
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(curLoc, 13));
+            // Zoom map to current location
+            LatLng curLoc = getCurLatLng();
+            assert curLoc != null;
+            if (curLoc != null)
+            {
+                map.setMyLocationEnabled(true);
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(curLoc, 13));
+            }
 
             //Set the listener
             map.setOnMapClickListener(this);
@@ -154,10 +162,6 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             map.setOnCameraChangeListener(this);
 
 
-            //Set this activity to listen for location changes
-            Criteria criteria = new Criteria();
-            criteria.setAccuracy(Criteria.ACCURACY_FINE);
-            locationManager.requestLocationUpdates(1000, 1, criteria, this, null);
         }
 
         //Do the tutorial
@@ -638,6 +642,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
      */
     public void updateLocation(final LatLng curLoc)
     {
+        if (curLoc == null) return;
         //Ensures that we don't update too frequently
         if (lastLocation == null || GameController.distanceBetween(lastLocation, curLoc) < UPDATE_DISTANCE)
         {
@@ -928,6 +933,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     {
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         Location curLocation = locationManager.getLastKnownLocation(locationManager.getBestProvider(new Criteria(), true));
+        if (curLocation == null) return null;
         LatLng curLoc = new LatLng(curLocation.getLatitude(), curLocation.getLongitude());
         return curLoc;
     }

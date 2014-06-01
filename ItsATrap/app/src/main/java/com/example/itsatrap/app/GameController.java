@@ -55,14 +55,11 @@ public class GameController
 
     private int maxPlantables = 12;
 
-    public GameController(User curUser, LocationManager locManager, MapActivity mapActivity)
+    public GameController(User curUser, MapActivity mapActivity)
 
     {
         this.curUser = curUser;
         this.mapActivity = mapActivity;
-
-        Location curLocation = locManager.getLastKnownLocation(locManager.getBestProvider(new Criteria(), true));
-        LatLng curLoc = new LatLng(curLocation.getLatitude(), curLocation.getLongitude());
     }
 
     public List<PlayerInfo> getHighScores()
