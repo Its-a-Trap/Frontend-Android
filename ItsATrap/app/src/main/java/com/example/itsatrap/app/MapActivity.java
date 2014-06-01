@@ -58,6 +58,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 {
     private MapActivity self;
 
+    private MapView mapView;
     private DrawerLayout drawerLayout;
     private ListView drawerList;
     private ArrayAdapter listAdapter;
@@ -160,6 +161,10 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             locationManager.requestLocationUpdates(1000, 1, criteria, this, null);
         }
 
+        // Tell the MapViewGroup about us
+        mapView = (MapView)findViewById(R.id.map_view);
+        mapView.setMapActivity(this);
+
         //Do the tutorial
 //        AlertDialog.Builder instructions = new AlertDialog.Builder(this);
 //        instructions.setTitle("Instructions");
@@ -213,7 +218,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
-        
+
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.map, menu);
         return true;

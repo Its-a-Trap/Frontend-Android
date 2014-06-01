@@ -6,24 +6,23 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Main content view (map> -->
-    <!--<FrameLayout-->
-        <!--xmlns:android="http://schemas/android.com/apk/res/android"-->
-        <!--android:layout_width="fill_parent"-->
-        <!--android:layout_height="fill_parent">-->
-
-    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:map="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/map"
+    <com.example.itsatrap.app.MapView
+        android:id="@+id/map_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:name="com.google.android.gms.maps.MapFragment"
-        map:mapType="satellite"
-        map:uiRotateGestures="false"
-        map:uiTiltGestures="false"
-        map:uiZoomControls="false"
-        map:uiCompass="false"
-        />
+        android:layout_height="match_parent">
+        <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:map="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/map"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:name="com.google.android.gms.maps.MapFragment"
+            map:mapType="satellite"
+            map:uiRotateGestures="false"
+            map:uiTiltGestures="false"
+            map:uiZoomControls="false"
+            map:uiCompass="false"
+            />
+    </com.example.itsatrap.app.MapView>
 
     <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"
