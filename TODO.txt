@@ -10,8 +10,8 @@ TO DO:
     - Maybe indicate how long you're going to get to see them (have them fade out?)
 - Kill you when you close the app
 - Several of my testers tried to click the “traps left” icon to place a trap. We should make it less clickable, or make it do something
-- Tutorial
 - traps expire / go rogue
+- Multithreading crash related to list adapter? (Daniel will fix)
 
 
 EASY QUICK:

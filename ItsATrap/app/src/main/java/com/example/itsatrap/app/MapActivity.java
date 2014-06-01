@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Point;
 import android.location.Criteria;
 import android.location.LocationListener;
 import android.os.AsyncTask;
@@ -19,6 +20,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.location.Location;
 import android.location.LocationManager;
 import android.util.Log;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,8 +29,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.amlcurran.showcaseview.OnShowcaseEventListener;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.ActionViewTarget;
+import com.github.amlcurran.showcaseview.targets.PointTarget;
 import com.github.amlcurran.showcaseview.targets.ViewTarget;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -50,7 +54,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class MapActivity extends Activity implements GoogleMap.OnMapClickListener,
-        GoogleMap.OnInfoWindowClickListener, LocationListener, GoogleMap.OnMarkerClickListener, GoogleMap.OnCameraChangeListener
+        GoogleMap.OnInfoWindowClickListener, LocationListener, GoogleMap.OnMarkerClickListener, GoogleMap.OnCameraChangeListener, View.OnClickListener
 {
 
     private DrawerLayout drawerLayout;
@@ -70,6 +74,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     private Date lastSweeped;
     private List<Marker> sweepMinesVisible;
 
+    //Putting the Java back in Javascript
     private MapActivity thisref;
 
     private LatLng lastLocation;
@@ -110,6 +115,10 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         thisref = this;
 
         sharedPrefs = getSharedPreferences(getString(R.string.SharedPrefName), 0);
+
+        //Set listeners
+        findViewById(R.id.drawer_button).setOnClickListener(this);
+        findViewById(R.id.sweep_button).setOnClickListener(this);
 
         //Create the game controller object
         gameController = new GameController(new User(sharedPrefs.getString(getString(R.string.PrefsEmailString), ""), sharedPrefs.getString(getString(R.string.PrefsIdString), ""), sharedPrefs.getString(getString(R.string.PrefsNameString), "")), (LocationManager) getSystemService(Context.LOCATION_SERVICE), this);
@@ -307,6 +316,19 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         }
     }
 
+    /**
+     * Handles onclick events for some of the buttons
+     * @param view
+     */
+    @Override
+    public void onClick(View view)
+    {
+        if (view.equals(findViewById(R.id.sweep_button)))
+            sweep(view);
+        else if (view.equals(findViewById(R.id.drawer_button)))
+            pullDrawerOut(view);
+    }
+
     @Override
     public void onStatusChanged(String s, int i, Bundle bundle) {
 
@@ -417,25 +439,133 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         mNotificationManager.notify(0, mBuilder.build());
     }
 
+    //TODO: Ensure that there are no currently set traps - set dummy user, perhaps
     public void showTutorial()
     {
-        ShowcaseView highScores = new ShowcaseView.Builder(this)
+        final ShowcaseView highScores = new ShowcaseView.Builder(this)
                 .setTarget(new ViewTarget(R.id.drawer_button, this))
                 .setContentTitle("High Scores")
                 .setContentText("Click this button, or swipe from the left part of the screen to see high scores.")
                 .build();
+        highScores.hideButton();
         highScores.hide();
 
-        ShowcaseView welcome = new ShowcaseView.Builder(this)
-                .setContentTitle("Welcome")
-                .setContentText("It's a trap is a game of cunning and deception. Earn points by placing traps where other people will walk over them, and avoid getting trapped yourself.")
-                .setOnClickListener(new View.OnClickListener() {
+        final ShowcaseView yourScore = new ShowcaseView.Builder(this)
+                .setTarget(new ViewTarget(R.id.your_score, this))
+                .setContentTitle("Your Score")
+                .setContentText("You can see your score at the top of the screen.")
+                .build();
+        yourScore.overrideButtonClick(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                yourScore.hide();
+                highScores.show();
+                thisref.findViewById(R.id.drawer_button).setOnClickListener(new View.OnClickListener() {
+                    //Method for ending the high scores section
                     @Override
                     public void onClick(View view) {
-
+                        highScores.hide();
+                        thisref.findViewById(R.id.drawer_button).setOnClickListener(thisref);
+                        thisref.onClick(view);
                     }
-                })
+                });
+            }
+        });
+        yourScore.hide();
+
+        final ShowcaseView sweep = new ShowcaseView.Builder(this)
+                .setTarget(new ViewTarget(R.id.sweep_button, this))
+                .setContentTitle("Sweep")
+                .setContentText("You can sweep to reveal enemy mines on the map.")
                 .build();
+        sweep.hideButton();
+        sweep.hide();
+
+        //The point to place and remove mines
+        Display display = getWindowManager().getDefaultDisplay();
+        Point tapPoint = new Point();
+        display.getSize(tapPoint);
+        tapPoint.set(tapPoint.x*2/3, tapPoint.y*2/3);
+
+        final ShowcaseView remove = new ShowcaseView.Builder(this)
+                .setTarget(new PointTarget(tapPoint))
+                .setContentTitle("Remove a Mine")
+                .setContentText("Tap a trap and confirm to remove it.")
+                .build();
+        remove.hideButton();
+        remove.setOnShowcaseEventListener(new OnShowcaseEventListener() {
+            //Method for ending the sweep section
+            @Override
+            public void onShowcaseViewHide(ShowcaseView showcaseView) {
+                thisref.findViewById(R.id.sweep_button).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        sweep.hide();
+                        yourScore.show();
+                        thisref.findViewById(R.id.sweep_button).setOnClickListener(thisref);
+                        thisref.onClick(view);
+                    }
+                });
+            }
+
+            @Override
+            public void onShowcaseViewDidHide(ShowcaseView showcaseView) {}
+
+            @Override
+            public void onShowcaseViewShow(ShowcaseView showcaseView) {}
+        });
+        remove.hide();
+
+        final ShowcaseView plant = new ShowcaseView.Builder(this)
+                .setTarget(new PointTarget(tapPoint))
+                .setContentTitle("Plant a Trap")
+                .setContentText("Tap on the map and tap again to confirm to place a trap.")
+                .build();
+        plant.hideButton();
+        plant.setOnShowcaseEventListener(new OnShowcaseEventListener() {
+            @Override
+            public void onShowcaseViewHide(ShowcaseView showcaseView) {
+                thisref.map.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+                    //Method for ending the remove section
+                    @Override
+                    public void onInfoWindowClick(Marker marker) {
+                        remove.hide();
+                        sweep.show();
+                        thisref.onInfoWindowClick(marker);
+                        thisref.map.setOnInfoWindowClickListener(thisref);
+                    }
+                });
+            }
+
+            @Override
+            public void onShowcaseViewDidHide(ShowcaseView showcaseView) {}
+
+            @Override
+            public void onShowcaseViewShow(ShowcaseView showcaseView) {}
+        });
+        plant.hide();
+
+        final ShowcaseView welcome = new ShowcaseView.Builder(this)
+                .setContentTitle("Welcome")
+                .setContentText("It's a trap is a game of cunning and deception.\n Earn points by placing traps where other people will walk over them, and avoid getting trapped yourself.")
+                .build();
+        welcome.overrideButtonClick(new View.OnClickListener() {
+            //Method for ending the welcome section
+            @Override
+            public void onClick(View view) {
+                welcome.hide();
+                plant.show();
+                thisref.map.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+                    //Method for ending the plant section
+                    @Override
+                    public void onInfoWindowClick(Marker marker) {
+                        plant.hide();
+                        remove.show();
+                        thisref.onInfoWindowClick(marker);
+                    }
+                });
+            }
+        });
     }
 
     /*
