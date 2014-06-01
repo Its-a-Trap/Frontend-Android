@@ -41,7 +41,7 @@ public class ScoreArrayAdapter extends ArrayAdapter<PlayerInfo>
 
         synchronized (objects)
         {
-            ((TextView) row.findViewById(R.id.drawer_name_text)).setText(objects.get(position).getName());
+            ((TextView) row.findViewById(R.id.drawer_name_text)).setText(position + ". " + objects.get(position).getName());
             ((TextView) row.findViewById(R.id.drawer_score_text)).setText(Integer.toString(objects.get(position).getScore()));
         }
 
