@@ -165,38 +165,31 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         mapView = (MapView)findViewById(R.id.map_view);
         mapView.setMapActivity(this);
 
-        //Do the tutorial
-//        AlertDialog.Builder instructions = new AlertDialog.Builder(this);
-//        instructions.setTitle("Instructions");
-//        instructions.setMessage("Welcome to It's a trap. Your goal is to plant traps that nearby players will walk over. Click on the map to place a trap - you can place up to 12. You can sweep to discover enemy traps. You will be notified if you walk over an enemy trap. Swipe from the left side of the screen to view high scores.");
-//        instructions.setPositiveButton("Ok", null);
-//        instructions.show();
-
-        showTutorial();
+        if (!sharedPrefs.contains(getString(R.string.TutorialCompleteFlag)))
+        {
+            showTutorial();
+            SharedPreferences.Editor editor = sharedPrefs.edit();
+            editor.putBoolean(getString(R.string.TutorialCompleteFlag), true);
+            editor.commit();
+        }
 
         updateLocation(getCurLatLng());
 
-        drawerLayout.setDrawerListener(new DrawerLayout.DrawerListener() {
+        drawerLayout.setDrawerListener(new DrawerLayout.DrawerListener()
+        {
             @Override
-            public void onDrawerSlide(View drawerView, float slideOffset) {
-
-            }
+            public void onDrawerSlide(View drawerView, float slideOffset) { }
 
             @Override
-            public void onDrawerOpened(View drawerView) {
-
+            public void onDrawerOpened(View drawerView)
+            {
                 drawerList.smoothScrollToPosition(yourScoreIndex);
             }
 
             @Override
-            public void onDrawerClosed(View drawerView) {
-
-            }
-
+            public void onDrawerClosed(View drawerView) {}
             @Override
-            public void onDrawerStateChanged(int newState) {
-
-            }
+            public void onDrawerStateChanged(int newState) {}
         });
     }
 
@@ -661,7 +654,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                 e.printStackTrace();
             }
 
-            class PostLocationTask extends PostJsonTask<Void>
+            class PostLocationTask extends PostJsonTask<JSONArray>
             {
 
                 public PostLocationTask(String serverAddress, String endpoint) {
@@ -669,7 +662,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                 }
 
                 @Override
-                protected Void parseResponse(String response) {
+                protected JSONArray parseResponse(String response) {
                     try {
                         JSONObject responseObject = new JSONObject(response);
                         JSONArray plantables = responseObject.getJSONArray("mines");
@@ -697,15 +690,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                                 gameController.getUserPlantables().add(new Plantable(myPlantables.getJSONObject(i)));
                             }
                         }
-                        //Update the high scores
-                        synchronized (gameController.getHighScores())
-                        {
-                            gameController.getHighScores().clear();
-                            for (int i = 0; i < scores.length(); ++i)
-                            {
-                                gameController.getHighScores().add(new PlayerInfo(scores.getJSONObject(i)));
-                            }
-                        }
+                        return scores;
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -713,8 +698,24 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                 }
 
                 @Override
-                protected void onPostExecute(Void v)
+                protected void onPostExecute(JSONArray newHighScores)
                 {
+                    //We have to do the high score updating in the main thread
+                    if (newHighScores != null)
+                    {
+                        synchronized (gameController.getHighScores())
+                        {
+                            gameController.getHighScores().clear();
+                            for (int i = 0; i < newHighScores.length(); ++i)
+                            {
+                                try {
+                                    gameController.getHighScores().add(new PlayerInfo(newHighScores.getJSONObject(i)));
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    }
                     updateHighScores();
                     updateMyMines();
                     checkForCollisions(curLoc);
