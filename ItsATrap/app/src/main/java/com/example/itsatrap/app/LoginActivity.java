@@ -1,22 +1,29 @@
 package com.example.itsatrap.app;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.plus.Plus;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.IOError;
+import java.io.IOException;
 
 /**
  * Created by carissa on 5/10/14.
@@ -44,12 +51,21 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
 
     private SharedPreferences sharedPrefs;
 
+    // For Push
+    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+    GoogleCloudMessaging gcm;
+    String SENDER_ID = "301006106178"; // From our Project Number in the Google Developer's Console
+    Context context;
+    String regid;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        context = getApplicationContext();
 
         sharedPrefs = getSharedPreferences(getString(R.string.SharedPrefName), 0);
 //        if (sharedPrefs.contains(getString(R.string.PrefsEmailString)))
@@ -143,6 +159,41 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
 
         final LoginActivity thisref = this;
 
+        class getRegIdTask extends AsyncTask {
+
+            Context context;
+            private getRegIdTask(Context context) {
+                this.context = context.getApplicationContext();
+            }
+
+            @Override
+            protected Object doInBackground(Object... params) {
+                try {
+                    if (gcm == null) {
+                        gcm = GoogleCloudMessaging.getInstance(context);
+                    }
+                    regid = gcm.register(SENDER_ID);
+                    editor.putString("RegId", regid);
+                    editor.putBoolean("RegSuccess",true);
+                    editor.commit();
+                    Log.d("RegId",regid);
+                } catch (IOException e) {
+                    editor.putBoolean("RegSuccess",false);
+                    Log.d("RegId","failed.");
+                    Log.d("Error:", e.getMessage());
+
+                    finish();
+                }
+                return new Object();
+            }
+
+            @Override
+            protected void onPostExecute(Object result) {
+                Intent intent = new Intent(thisref, MapActivity.class);
+                startActivity(intent);
+            }
+        }
+
         class GetIdTask extends PostJsonTask<String>
         {
 
@@ -161,8 +212,9 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
             {
                 editor.putString(getString(R.string.PrefsIdString), id);
                 editor.commit();
-                Intent intent = new Intent(thisref, MapActivity.class);
-                startActivity(intent);
+
+
+                new getRegIdTask(context).execute(null, null, null);
             }
         }
         new GetIdTask(MapActivity.serverAddress, "/api/getuserid").execute(toSend);
@@ -234,4 +286,22 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
             login_google(view);
         }
     }
+
+    // For Push
+    private boolean checkPlayServices() {
+        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
+                GooglePlayServicesUtil.getErrorDialog(resultCode, this,
+                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
+            } else {
+                Log.i("Uh oh:", "This device is not supported.");
+                finish();
+            }
+            return false;
+        }
+        return true;
+    }
+
+
 }

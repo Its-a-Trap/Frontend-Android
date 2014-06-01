@@ -1,6 +1,5 @@
 TO DO:
 
-- When you trap someone/are trapped, maybe be notified of when the trap was placed?
 - Gamification / Graphic qualities
     - Black and white grainy map + trap vibrates into place and kachunks into place
     - When you open the app and someone has tripped one of your traps, you see it increase your score and get a notification or something
@@ -10,18 +9,22 @@ TO DO:
     - Maybe indicate how long you're going to get to see them (have them fade out?)
 - Kill you when you close the app
 - Several of my testers tried to click the “traps left” icon to place a trap. We should make it less clickable, or make it do something
-- traps that have been placed but not confirmed should disappear when they’re scrolled off-screen. Also, when you place a trap, then move the map, then click the trap again, the icon is deleted, but the "Place?" dialogue remains.
-- Tutorial
 - traps expire / go rogue
+- Multithreading crash related to list adapter? (Daniel will fix)
+- Toast when the place / remove call to the server doesn't work, so if you're removing, a trap will disappear from your gui, but not from the server, so the next update it will re-appear
 
 
 EASY QUICK:
 - Change sweep radius
 
+
 LOW PRIORITY:
 - Other login buttons?
 - How to show a location-based demo (cheesy video???)
 - Sweep is device-specific, shouldn't be
+- When you trap someone/are trapped, maybe be notified of when the trap was placed?
+- traps expire / go rogue
+
 
 CONCERNS:
 - Will this work on Jeff's phone? 

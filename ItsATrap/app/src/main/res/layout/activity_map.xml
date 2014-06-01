@@ -36,7 +36,7 @@
             <RelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="30dp" >
+                android:layout_marginRight="15dp" >
 
                 <ImageView
                     android:id="@+id/your_plantable_image"
@@ -62,16 +62,21 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Score"
+                android:minEms="2"
                 android:textSize="26dp"
                 android:layout_alignParentRight="true"
-                android:layout_marginRight="30dp"/>
+                android:layout_marginRight="15dp"
+                android:layout_marginLeft="15dp"
+                android:layout_gravity="center_horizontal"
+                android:textColor="#ffffff"/>
 
             <Button android:id="@+id/sweep_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="SWEEP"
                 android:onClick="sweep"
-                android:layout_marginRight="30dp"/>
+                android:layout_marginRight="15dp"
+                android:layout_marginLeft="15dp"/>
 
         </LinearLayout>
 
