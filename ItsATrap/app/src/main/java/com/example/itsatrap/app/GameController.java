@@ -42,10 +42,10 @@ public class GameController
 
 
 
-    private User curUser;
-    private final List<Plantable> userPlantables = new ArrayList<Plantable>();
-    private final List<Plantable> enemyPlantables = new ArrayList<Plantable>();
-    private final List<PlayerInfo> highScores = new ArrayList<PlayerInfo>();
+    protected User curUser;
+    protected final List<Plantable> userPlantables = new ArrayList<Plantable>();
+    protected final List<Plantable> enemyPlantables = new ArrayList<Plantable>();
+    protected final List<PlayerInfo> highScores = new ArrayList<PlayerInfo>();
 
     private LatLng lastRegisteredLocation;
 

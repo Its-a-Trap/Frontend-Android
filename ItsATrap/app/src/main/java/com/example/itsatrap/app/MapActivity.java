@@ -439,9 +439,16 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         mNotificationManager.notify(0, mBuilder.build());
     }
 
-    //TODO: Ensure that there are no currently set traps - set dummy user, perhaps
+    /**
+     * Runs the build in tutorial. Replaces the user data to something garuanteed to be useful, and
+     * steps through a series of showcase views designed to lead the user through the major elements
+     * of the game.
+     */
     public void showTutorial()
     {
+        final GameController realController = gameController;
+        gameController = new TutorialGameController(gameController.getUser(), (LocationManager) getSystemService(Context.LOCATION_SERVICE), this);
+
         final ShowcaseView highScores = new ShowcaseView.Builder(this)
                 .setTarget(new ViewTarget(R.id.drawer_button, this))
                 .setContentTitle("High Scores")
@@ -467,6 +474,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                         highScores.hide();
                         thisref.findViewById(R.id.drawer_button).setOnClickListener(thisref);
                         thisref.onClick(view);
+                        thisref.gameController = realController;
+                        lastSweeped = null;
                     }
                 });
             }
