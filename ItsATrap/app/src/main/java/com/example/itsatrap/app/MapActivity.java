@@ -538,7 +538,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         final ShowcaseView sweep = new ShowcaseView.Builder(this)
                 .setTarget(new ViewTarget(R.id.sweep_button, this))
                 .setContentTitle("Sweep")
-                .setContentText("You can sweep to reveal enemy mines on the map. You can only sweep every "+SWEEP_COOLDOWN+" minutes.")
+                .setContentText("You can sweep to reveal enemy mines on the map. You can only sweep every " + SWEEP_COOLDOWN + " minutes.")
                 .build();
         sweep.hideButton();
         sweep.hide();
@@ -591,10 +591,14 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                     //Method for ending the remove section
                     @Override
                     public void onInfoWindowClick(Marker marker) {
-                        remove.hide();
-                        sweep.show();
+                        if (plantableToPlace == null || (plantableToPlace != null && !marker.getPosition().equals(plantableToPlace.getPosition())))
+                        {
+                            remove.hide();
+                            sweep.show();
+                            thisref.map.setOnInfoWindowClickListener(thisref);
+                        }
+
                         thisref.onInfoWindowClick(marker);
-                        thisref.map.setOnInfoWindowClickListener(thisref);
                     }
                 });
             }
