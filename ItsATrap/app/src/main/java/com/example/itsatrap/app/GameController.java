@@ -137,6 +137,14 @@ public class GameController
         }
     }
 
+    public int getNumUserPlantablesUsed()
+    {
+        synchronized (userPlantables)
+        {
+            return userPlantables.size();
+        }
+    }
+
     public void addUserPlantable(Plantable toAdd)
     {
         synchronized (userPlantables)
