@@ -49,42 +49,43 @@ public class GcmIntentService extends IntentService {
 
     public static final String BROADCAST_ACTION = "com.example.itsatrap.app.receivepush";
     private final Handler handler = new Handler();
-    Intent intent;
+//    Intent intent;
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-
-        intent = new Intent(BROADCAST_ACTION);
-    }
-
-    @Override
-    public void onStart(Intent intent, int startId) {
-        handler.removeCallbacks(sendUpdatesToUI);
-        handler.postDelayed(sendUpdatesToUI, 1000); // 1 second
-
-    }
-
-    private Runnable sendUpdatesToUI = new Runnable() {
-        public void run() {
-            sendBroadcast(intent);
-        }
-    };
+//    @Override
+//    public void onCreate() {
+//        super.onCreate();
+//
+////        intent = new Intent(BROADCAST_ACTION);
+//    }
+//
+//    @Override
+//    public void onStart(Intent intent, int startId) {
+//        handler.removeCallbacks(sendUpdatesToUI);
+//        handler.postDelayed(sendUpdatesToUI, 1000); // 1 second
+//
+//    }
+//
+//    private Runnable sendUpdatesToUI = new Runnable() {
+//        public void run() {
+//            sendBroadcast(intent);
+//        }
+//    };
 
     @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
 
-    @Override
-    public void onDestroy() {
-        handler.removeCallbacks(sendUpdatesToUI);
-        super.onDestroy();
-    }
+//    @Override
+//    public void onDestroy() {
+//        handler.removeCallbacks(sendUpdatesToUI);
+//        super.onDestroy();
+//    }
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        sendBroadcast(this.intent);
+        intent.setAction(BROADCAST_ACTION);
+        sendBroadcast(intent);
 //        Bundle extras = intent.getExtras();
 //        GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
 //        // The getMessageType() intent parameter must be the intent you received
