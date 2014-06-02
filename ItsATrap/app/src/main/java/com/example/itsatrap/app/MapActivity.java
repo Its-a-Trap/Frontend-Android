@@ -22,6 +22,7 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.location.Location;
 import android.location.LocationManager;
+import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -105,7 +106,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         @Override
         public void onReceive(Context context, Intent intent) {
             updateLocation(getCurLatLng());
-            Log.d(TAG+"PUSH", "Received push notification!!");
+            Log.d(TAG + "PUSH", "Received push notification!!");
         }
     };
 
@@ -481,7 +482,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
         //Set up expanded version of notification with full explanation
         NotificationCompat.BigTextStyle bigStyle = new NotificationCompat.BigTextStyle();
-        bigStyle.bigText("You have been trapped "+deathCount+" times by "+killersList.toString()+". You lost "+50*deathCount+" points.");
+        bigStyle.bigText("You have been trapped " + deathCount + " times by " + killersList.toString() + ". You lost " + 50 * deathCount + " points.");
         mBuilder.setStyle(bigStyle);
 
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
