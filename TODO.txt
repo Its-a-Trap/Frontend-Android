@@ -1,18 +1,11 @@
 TO DO:
 
 - Notifies you when someone else has run into your trap
-- Gamification / Graphic qualities
-    - Black and white grainy map + trap vibrates into place and kachunks into place
-    - When you open the app and someone has tripped one of your traps, you see it increase your score and get a notification or something
-    - Cool sonar graphic for sweep
-- Sweep
-    - Have a cooldown display
-    - Maybe indicate how long you're going to get to see them (have them fade out?)
 - Kill you when you close the app
 - Several of my testers tried to click the “traps left” icon to place a trap. We should make it less clickable, or make it do something
-- traps expire / go rogue
-- Multithreading crash related to list adapter? (Daniel will fix)
 - Toast when the place / remove call to the server doesn't work, so if you're removing, a trap will disappear from your gui, but not from the server, so the next update it will re-appear
+- Make it so tutorial preserves state on rotation
+- Notifications when you get a kill
 
 
 EASY QUICK:
@@ -20,6 +13,10 @@ EASY QUICK:
 
 
 LOW PRIORITY:
+- Gamification / Graphic qualities
+    - Black and white grainy map + trap vibrates into place and kachunks into place
+    - When you open the app and someone has tripped one of your traps, you see it increase your score and get a notification or something
+    - Cool sonar graphic for sweep
 - Other login buttons?
 - How to show a location-based demo (cheesy video???)
 - Sweep is device-specific, shouldn't be

@@ -1,19 +1,22 @@
 package com.example.itsatrap.app;
 
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.graphics.Point;
+import android.graphics.drawable.ShapeDrawable;
 import android.location.Criteria;
 import android.location.LocationListener;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -24,20 +27,20 @@ import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.LinearInterpolator;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.amlcurran.showcaseview.OnShowcaseEventListener;
 import com.github.amlcurran.showcaseview.ShowcaseView;
-import com.github.amlcurran.showcaseview.targets.ActionViewTarget;
 import com.github.amlcurran.showcaseview.targets.PointTarget;
 import com.github.amlcurran.showcaseview.targets.ViewTarget;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
 
@@ -45,7 +48,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -57,8 +59,10 @@ import java.util.TimerTask;
 public class MapActivity extends Activity implements GoogleMap.OnMapClickListener,
         GoogleMap.OnInfoWindowClickListener, LocationListener, GoogleMap.OnMarkerClickListener, GoogleMap.OnCameraChangeListener, View.OnClickListener
 {
+    public static final String TAG = "IATMapActivity";
     private MapActivity self;
 
+    private MapView mapView;
     private DrawerLayout drawerLayout;
     private ListView drawerList;
     private ArrayAdapter listAdapter;
@@ -88,16 +92,28 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     //The number of times the user has been killed since they last opened the app
     private int deathCount;
 
+    private ShapeDrawable cooldownShape;
+
     //The sweep cooldown, in minutes
     private final int SWEEP_COOLDOWN = 30;
     //The amount of time sweeped mines should be visible, in seconds
-    private final int SWEEP_DURATION = 30;
+    private final int SWEEP_DURATION = 5;
     //The radius of the sweep, in meters
     private final int SWEEP_RADIUS = 1000;
     //Register a new location with the server after travelling this far (currently 5 miles)
     private final double UPDATE_DISTANCE = 8046.72;
 
     public static final String serverAddress = "http://107.170.182.13:3000";
+
+
+    private Intent intent;
+    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            updateLocation(getCurLatLng());
+            Log.d(TAG + "PUSH", "Received push notification!!");
+        }
+    };
 
 
 
@@ -108,6 +124,9 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
+
+        // Setup Push
+        intent = new Intent(this, GcmIntentService.class);
 
         //Initialize internal state information
         sweepMinesVisible = new ArrayList<Marker>();
@@ -136,6 +155,14 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         listAdapter = new ScoreArrayAdapter(this, R.layout.drawer_list_item, gameController.getHighScores());
         drawerList.setAdapter(listAdapter);
         drawerLayout.setScrimColor(getResources().getColor(R.color.drawer_scrim));
+
+        //Set up the sweep button
+        View coolDownDisplay = findViewById(R.id.cooldown_display);
+        View sweepButton = findViewById(R.id.sweep_button);
+        cooldownShape = new ShapeDrawable(new VariableArcShape(0f, 0f, sweepButton.getWidth(), sweepButton.getHeight()));
+        cooldownShape.getPaint().setARGB(180, 255, 255, 255);
+        coolDownDisplay.setBackground(cooldownShape);
+
         // Get a handle to the Map Fragment
         map = ((MapFragment) getFragmentManager()
                 .findFragmentById(R.id.map)).getMap();
@@ -163,38 +190,35 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             locationManager.requestLocationUpdates(1000, 1, criteria, this, null);
         }
 
-        //Do the tutorial
-//        AlertDialog.Builder instructions = new AlertDialog.Builder(this);
-//        instructions.setTitle("Instructions");
-//        instructions.setMessage("Welcome to It's a trap. Your goal is to plant traps that nearby players will walk over. Click on the map to place a trap - you can place up to 12. You can sweep to discover enemy traps. You will be notified if you walk over an enemy trap. Swipe from the left side of the screen to view high scores.");
-//        instructions.setPositiveButton("Ok", null);
-//        instructions.show();
+        // Tell the MapViewGroup about us
+        mapView = (MapView)findViewById(R.id.map_view);
+        mapView.setMapActivity(this);
 
-        showTutorial();
+        if (true || !sharedPrefs.contains(getString(R.string.TutorialCompleteFlag)))
+        {
+            showTutorial();
+            SharedPreferences.Editor editor = sharedPrefs.edit();
+            editor.putBoolean(getString(R.string.TutorialCompleteFlag), true);
+            editor.commit();
+        }
 
         updateLocation(getCurLatLng());
 
-        drawerLayout.setDrawerListener(new DrawerLayout.DrawerListener() {
+        drawerLayout.setDrawerListener(new DrawerLayout.DrawerListener()
+        {
             @Override
-            public void onDrawerSlide(View drawerView, float slideOffset) {
-
-            }
+            public void onDrawerSlide(View drawerView, float slideOffset) { }
 
             @Override
-            public void onDrawerOpened(View drawerView) {
-
+            public void onDrawerOpened(View drawerView)
+            {
                 drawerList.smoothScrollToPosition(yourScoreIndex);
             }
 
             @Override
-            public void onDrawerClosed(View drawerView) {
-
-            }
-
+            public void onDrawerClosed(View drawerView) {}
             @Override
-            public void onDrawerStateChanged(int newState) {
-
-            }
+            public void onDrawerStateChanged(int newState) {}
         });
 
         ImageView trapsLeftImg = (ImageView) findViewById(R.id.your_plantable_image);
@@ -218,14 +242,27 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         });
     }
 
-    public void onStart()
-    {
+    public void onStart() {
         super.onStart();
         //Since the user has opened the app, remove the notification and clear the death records
         killers.clear();
         deathCount = 0;
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.cancel(0);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        startService(intent);
+        registerReceiver(broadcastReceiver, new IntentFilter(GcmIntentService.BROADCAST_ACTION));
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        unregisterReceiver(broadcastReceiver);
+        stopService(intent);
     }
 
 
@@ -236,7 +273,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
-        
+
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.map, menu);
         return true;
@@ -362,7 +399,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     public void onClick(View view)
     {
         if (view.equals(findViewById(R.id.sweep_button)))
-            sweep(view);
+            if (sweep(view))
+                sweepCooldownAnimation();
         else if (view.equals(findViewById(R.id.drawer_button)))
             pullDrawerOut(view);
     }
@@ -434,6 +472,17 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     }
 
     /**
+     * Removes the markers for all mines revealed in the last sweep
+     */
+    public void setSweepedMineOpacity(double opacity)
+    {
+        for (Marker sweepMine : sweepMinesVisible)
+        {
+            sweepMine.setAlpha((float)opacity);
+        }
+    }
+
+    /**
      * Handles displaying a notification informing the user they they have been trapped.
      * Creates a system-level notification if one does not already exists, or updates an existing
      * notification if it already exists. There can be only one notification from this app at a time.
@@ -469,16 +518,23 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
         //Set up expanded version of notification with full explanation
         NotificationCompat.BigTextStyle bigStyle = new NotificationCompat.BigTextStyle();
-        bigStyle.bigText("You have been trapped "+deathCount+" times by "+killersList.toString()+". You lost "+50*deathCount+" points.");
+        bigStyle.bigText("You have been trapped " + deathCount + " times by " + killersList.toString() + ". You lost " + 50 * deathCount + " points.");
         mBuilder.setStyle(bigStyle);
 
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.notify(0, mBuilder.build());
     }
 
-    //TODO: Ensure that there are no currently set traps - set dummy user, perhaps
+    /**
+     * Runs the build in tutorial. Replaces the user data to something garuanteed to be useful, and
+     * steps through a series of showcase views designed to lead the user through the major elements
+     * of the game.
+     */
     public void showTutorial()
     {
+        final GameController realController = gameController;
+        gameController = new TutorialGameController(gameController.getUser(), (LocationManager) getSystemService(Context.LOCATION_SERVICE), this);
+
         final ShowcaseView highScores = new ShowcaseView.Builder(this)
                 .setTarget(new ViewTarget(R.id.drawer_button, this))
                 .setContentTitle("High Scores")
@@ -504,6 +560,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                         highScores.hide();
                         thisref.findViewById(R.id.drawer_button).setOnClickListener(thisref);
                         thisref.onClick(view);
+                        thisref.gameController = realController;
+                        lastSweeped = null;
                     }
                 });
             }
@@ -513,7 +571,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         final ShowcaseView sweep = new ShowcaseView.Builder(this)
                 .setTarget(new ViewTarget(R.id.sweep_button, this))
                 .setContentTitle("Sweep")
-                .setContentText("You can sweep to reveal enemy mines on the map.")
+                .setContentText("You can sweep to reveal enemy mines on the map. You can only sweep every "+SWEEP_COOLDOWN+" minutes.")
                 .build();
         sweep.hideButton();
         sweep.hide();
@@ -540,7 +598,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                         sweep.hide();
                         yourScore.show();
                         thisref.findViewById(R.id.sweep_button).setOnClickListener(thisref);
-                        thisref.onClick(view);
+                        thisref.sweep(view);
                     }
                 });
             }
@@ -584,7 +642,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
         final ShowcaseView welcome = new ShowcaseView.Builder(this)
                 .setContentTitle("Welcome")
-                .setContentText("It's a trap is a game of cunning and deception.\n Earn points by placing traps where other people will walk over them, and avoid getting trapped yourself.")
+                .setContentText("It's a trap is a game of cunning and \ndeception. Earn points by placing traps \nwhere other people will walk over them, \nand avoid getting trapped yourself.")
                 .build();
         welcome.overrideButtonClick(new View.OnClickListener() {
             //Method for ending the welcome section
@@ -612,15 +670,16 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     /**
      *  Performs a "sweep", revealing all enemy mines within the sweep radius on the map for the sweep duration
      * @param view
+     * @return Whether or not the sweep was triggered
      */
-    public void sweep(View view)
+    public boolean sweep(View view)
     {
         //Check to see if we last sweeped too recently
         if (lastSweeped != null && new Date().getTime() - lastSweeped.getTime() < 1000*60*SWEEP_COOLDOWN)
         {
             long minutesLeft = (SWEEP_COOLDOWN*60*1000 - (new Date().getTime() - lastSweeped.getTime()))/1000/60 + 1;
             Toast.makeText(this, "Can't sweep again for "+minutesLeft+" minutes.", Toast.LENGTH_SHORT).show();
-            return;
+            return false;
         }
 
         //Get nearby enemy mines, and add markers to the map
@@ -637,14 +696,56 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         //Record when we last sweeped to prevent excessive sweeping
         lastSweeped = new Date();
 
-        Timer sweepTimer = new Timer(true);
-        Date afterSweepDuration = new Date();
-        afterSweepDuration.setTime(afterSweepDuration.getTime()+1000*SWEEP_DURATION);
-
         //Set a timer to remove the traps after the sweep duration
-        sweepTimer.schedule(new TimerTask() {
+        new SweepTimerTask(100, 1000*SWEEP_DURATION);
+
+        return true;
+    }
+
+    public void sweepCooldownAnimation()
+    {
+        ((VariableArcShape)cooldownShape.getShape()).setSweepAngle(360f);
+        AnimatorSet set = new AnimatorSet();
+        ObjectAnimator circleAnimation = ObjectAnimator.ofFloat(cooldownShape.getShape(), "SweepAngle", 350, 0);
+        set.play(circleAnimation);
+        set.setDuration(SWEEP_COOLDOWN*60*1000);
+        set.setInterpolator(new LinearInterpolator());
+        circleAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
-            public void run() {
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                cooldownShape.invalidateSelf();
+            }
+        });
+        set.start();
+    }
+
+    
+    class SweepTimerTask extends TimerTask {
+        int updateFrequency;
+        int timeLeft;
+        
+        SweepTimerTask(int updateFrequency, int timeLeft) {
+            this.updateFrequency = updateFrequency;
+            this.timeLeft = timeLeft;
+
+            Date afterSweepDuration = new Date();
+            afterSweepDuration.setTime(afterSweepDuration.getTime() + updateFrequency);
+            Timer sweepTimer = new Timer(true);
+            sweepTimer.schedule(this, afterSweepDuration);
+        }
+        
+        @Override
+        public void run() {
+            if (timeLeft > 0) {
+                thisref.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        thisref.setSweepedMineOpacity(timeLeft/1000.0/SWEEP_DURATION);
+                    }
+                });
+
+                new SweepTimerTask(updateFrequency, timeLeft-updateFrequency);
+            } else {
                 thisref.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -652,7 +753,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                     }
                 });
             }
-        }, afterSweepDuration);
+        }
     }
 
     /**
@@ -676,11 +777,12 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                 toSend.put("location", loc);
                 toSend.put("token", sharedPrefs.getString("RegId",""));
                 toSend.put("user", gameController.getUser().getId());
+                toSend.put("client_type","Android");
             } catch (JSONException e) {
                 e.printStackTrace();
             }
 
-            class PostLocationTask extends PostJsonTask<Void>
+            class PostLocationTask extends PostJsonTask<JSONArray>
             {
 
                 public PostLocationTask(String serverAddress, String endpoint) {
@@ -688,7 +790,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                 }
 
                 @Override
-                protected Void parseResponse(String response) {
+                protected JSONArray parseResponse(String response) {
                     try {
                         JSONObject responseObject = new JSONObject(response);
                         JSONArray plantables = responseObject.getJSONArray("mines");
@@ -716,15 +818,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                                 gameController.getUserPlantables().add(new Plantable(myPlantables.getJSONObject(i)));
                             }
                         }
-                        //Update the high scores
-                        synchronized (gameController.getHighScores())
-                        {
-                            gameController.getHighScores().clear();
-                            for (int i = 0; i < scores.length(); ++i)
-                            {
-                                gameController.getHighScores().add(new PlayerInfo(scores.getJSONObject(i)));
-                            }
-                        }
+                        return scores;
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -732,8 +826,24 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                 }
 
                 @Override
-                protected void onPostExecute(Void v)
+                protected void onPostExecute(JSONArray newHighScores)
                 {
+                    //We have to do the high score updating in the main thread
+                    if (newHighScores != null)
+                    {
+                        synchronized (gameController.getHighScores())
+                        {
+                            gameController.getHighScores().clear();
+                            for (int i = 0; i < newHighScores.length(); ++i)
+                            {
+                                try {
+                                    gameController.getHighScores().add(new PlayerInfo(newHighScores.getJSONObject(i)));
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    }
                     updateHighScores();
                     updateMyMines();
                     checkForCollisions(curLoc);
