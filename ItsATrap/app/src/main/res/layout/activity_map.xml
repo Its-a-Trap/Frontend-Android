@@ -69,12 +69,29 @@
                 android:layout_gravity="center_horizontal"
                 android:textColor="#ffffff"/>
 
-            <Button android:id="@+id/sweep_button"
+            <RelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="SWEEP"
                 android:layout_marginRight="15dp"
-                android:layout_marginLeft="15dp"/>
+                android:layout_marginLeft="15dp">
+
+                <Button android:id="@+id/sweep_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="SWEEP"
+                    />
+
+                <ImageView
+                    android:id="@+id/cooldown_display"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/sweep_button"
+                    android:layout_alignRight="@+id/sweep_button"
+                    android:layout_alignTop="@+id/sweep_button"
+                    android:layout_alignBottom="@+id/sweep_button"/>
+
+                </RelativeLayout>
+
 
         </LinearLayout>
 
