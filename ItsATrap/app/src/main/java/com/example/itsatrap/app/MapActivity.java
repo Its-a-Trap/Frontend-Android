@@ -228,6 +228,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         trapsLeftImg.setOnClickListener(new View.OnClickListener() {
             // Start new list activity
             public void onClick(View v) {
+                ((Vibrator)getSystemService(VIBRATOR_SERVICE)).vibrate(20);
                 if (trapsLeftToggle)
                 {
                     ((TextView) findViewById(R.id.your_plantable_count))
@@ -684,6 +685,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         //Check to see if we last sweeped too recently
         if (lastSweeped != null && new Date().getTime() - lastSweeped.getTime() < 1000*60*SWEEP_COOLDOWN)
         {
+
             long minutesLeft = (SWEEP_COOLDOWN*60*1000 - (new Date().getTime() - lastSweeped.getTime()))/1000/60 + 1;
             Toast.makeText(this, "Can't sweep again for "+minutesLeft+" minutes.", Toast.LENGTH_SHORT).show();
             return false;
