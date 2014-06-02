@@ -1,13 +1,20 @@
 package com.example.itsatrap.app;
 
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Point;
+import android.graphics.drawable.ShapeDrawable;
 import android.location.Criteria;
 import android.location.LocationListener;
 import android.os.Bundle;
@@ -19,7 +26,9 @@ import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -46,6 +55,7 @@ import java.util.TimerTask;
 public class MapActivity extends Activity implements GoogleMap.OnMapClickListener,
         GoogleMap.OnInfoWindowClickListener, LocationListener, GoogleMap.OnMarkerClickListener, GoogleMap.OnCameraChangeListener, View.OnClickListener
 {
+    public static final String TAG = "IATMapActivity";
     private MapActivity self;
 
     private MapView mapView;
@@ -76,6 +86,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     //The number of times the user has been killed since they last opened the app
     private int deathCount;
 
+    private ShapeDrawable cooldownShape;
+
     //The sweep cooldown, in minutes
     private final int SWEEP_COOLDOWN = 30;
     //The amount of time sweeped mines should be visible, in seconds
@@ -88,6 +100,16 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     public static final String serverAddress = "http://107.170.182.13:3000";
 
 
+    private Intent intent;
+    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            updateLocation(getCurLatLng());
+            Log.d(TAG+"PUSH", "Received push notification!!");
+        }
+    };
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -96,6 +118,9 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
+
+        // Setup Push
+        intent = new Intent(this, GcmIntentService.class);
 
         //Initialize internal state information
         sweepMinesVisible = new ArrayList<Marker>();
@@ -124,6 +149,14 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         listAdapter = new ScoreArrayAdapter(this, R.layout.drawer_list_item, gameController.getHighScores());
         drawerList.setAdapter(listAdapter);
         drawerLayout.setScrimColor(getResources().getColor(R.color.drawer_scrim));
+
+        //Set up the sweep button
+        View coolDownDisplay = findViewById(R.id.cooldown_display);
+        View sweepButton = findViewById(R.id.sweep_button);
+        cooldownShape = new ShapeDrawable(new VariableArcShape(0f, 0f, sweepButton.getWidth(), sweepButton.getHeight()));
+        cooldownShape.getPaint().setARGB(128, 255, 255, 255);
+        coolDownDisplay.setBackground(cooldownShape);
+
         // Get a handle to the Map Fragment
         map = ((MapFragment) getFragmentManager()
                 .findFragmentById(R.id.map)).getMap();
@@ -183,14 +216,27 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         });
     }
 
-    public void onStart()
-    {
+    public void onStart() {
         super.onStart();
         //Since the user has opened the app, remove the notification and clear the death records
         killers.clear();
         deathCount = 0;
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.cancel(0);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        startService(intent);
+        registerReceiver(broadcastReceiver, new IntentFilter(GcmIntentService.BROADCAST_ACTION));
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        unregisterReceiver(broadcastReceiver);
+        stopService(intent);
     }
 
 
@@ -614,6 +660,25 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
         //Set a timer to remove the traps after the sweep duration
         new SweepTimerTask(100, 1000*SWEEP_DURATION);
+
+        // Do pie shit
+        VariableArcShape pie = (VariableArcShape)cooldownShape.getShape();
+        ((VariableArcShape)cooldownShape.getShape()).setSweepAngle(360f);
+        View sweepButton = findViewById(R.id.sweep_button);
+        pie.setHeight(sweepButton.getHeight());// - sweepButton.getPaddingTop() - sweepButton.getPaddingBottom());
+        pie.setWidth(sweepButton.getWidth());// - sweepButton.getPaddingLeft() - sweepButton.getPaddingRight());
+        AnimatorSet set = new AnimatorSet();
+        ObjectAnimator circleAnimation = ObjectAnimator.ofFloat(cooldownShape.getShape(), "SweepAngle", 350, 0);
+        set.play(circleAnimation);
+        set.setDuration(2000);
+        set.setInterpolator(new LinearInterpolator());
+        circleAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                cooldownShape.invalidateSelf();
+            }
+        });
+        set.start();
     }
     
     class SweepTimerTask extends TimerTask {
@@ -673,6 +738,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                 toSend.put("location", loc);
                 toSend.put("token", sharedPrefs.getString("RegId",""));
                 toSend.put("user", gameController.getUser().getId());
+                toSend.put("client_type","Android");
             } catch (JSONException e) {
                 e.printStackTrace();
             }
