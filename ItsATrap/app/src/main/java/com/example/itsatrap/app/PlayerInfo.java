@@ -6,22 +6,18 @@ import org.json.JSONObject;
 /**
  * Created by maegereg on 5/10/14.
  */
-public class PlayerInfo
-{
+public class PlayerInfo{
 
     private String name;
     private int score;
 
-    public PlayerInfo(String name, int score)
-    {
+    public PlayerInfo(String name, int score) {
         this.name = name;
         this.score = score;
     }
 
-    public PlayerInfo(JSONObject jsonObject)
-    {
-        try
-        {
+    public PlayerInfo(JSONObject jsonObject) {
+        try {
             this.name = jsonObject.getString("name");
             this.score = jsonObject.getInt("score");
         } catch (JSONException e) {

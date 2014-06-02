@@ -59,8 +59,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class MapActivity extends Activity implements GoogleMap.OnMapClickListener,
-        GoogleMap.OnInfoWindowClickListener, LocationListener, GoogleMap.OnMarkerClickListener, GoogleMap.OnCameraChangeListener, View.OnClickListener
-{
+        GoogleMap.OnInfoWindowClickListener, LocationListener, GoogleMap.OnMarkerClickListener, GoogleMap.OnCameraChangeListener, View.OnClickListener{
     public static final String TAG = "IATMapActivity";
     private MapActivity self;
 
@@ -121,8 +120,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState){
         self = this;
 
         super.onCreate(savedInstanceState);
@@ -172,8 +170,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
         markerData = new HashMap<Marker, Plantable>();
 
-        if  (map != null)
-        {
+        if  (map != null){
             LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
             LatLng curLoc = getCurLatLng();
 
@@ -197,8 +194,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         mapView = (MapView)findViewById(R.id.map_view);
         mapView.setMapActivity(this);
 
-        if (true || !sharedPrefs.contains(getString(R.string.TutorialCompleteFlag)))
-        {
+        if (true || !sharedPrefs.contains(getString(R.string.TutorialCompleteFlag))){
             showTutorial();
             SharedPreferences.Editor editor = sharedPrefs.edit();
             editor.putBoolean(getString(R.string.TutorialCompleteFlag), true);
@@ -207,14 +203,12 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
         updateLocation(getCurLatLng());
 
-        drawerLayout.setDrawerListener(new DrawerLayout.DrawerListener()
-        {
+        drawerLayout.setDrawerListener(new DrawerLayout.DrawerListener(){
             @Override
             public void onDrawerSlide(View drawerView, float slideOffset) { }
 
             @Override
-            public void onDrawerOpened(View drawerView)
-            {
+            public void onDrawerOpened(View drawerView){
                 drawerList.setSelection(yourScoreIndex);
             }
 
@@ -230,14 +224,12 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             // Start new list activity
             public void onClick(View v) {
                 ((Vibrator)getSystemService(VIBRATOR_SERVICE)).vibrate(20);
-                if (trapsLeftToggle)
-                {
+                if (trapsLeftToggle){
                     ((TextView) findViewById(R.id.your_plantable_count))
                             .setText(String.valueOf(gameController.getNumUserPlantablesUsed()) + "\ntraps placed");
                     trapsLeftToggle = false;
                 }
-                else
-                {
+                else{
                     ((TextView) findViewById(R.id.your_plantable_count))
                             .setText(String.valueOf(gameController.getNumUserPlantablesLeft())+"\ntraps left");
                     trapsLeftToggle = true;
@@ -284,8 +276,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
      */
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
+    public boolean onCreateOptionsMenu(Menu menu){
 
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.map, menu);
@@ -293,8 +284,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
+    public boolean onOptionsItemSelected(MenuItem item){
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
@@ -306,21 +296,16 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     }
 
     @Override
-    public void onMapClick(LatLng latLng)
-    {
+    public void onMapClick(LatLng latLng){
         // If you're out of plantable items, don't let them do it
-        if (gameController.getNumUserPlantablesLeft() <= 0)
-        {
+        if (gameController.getNumUserPlantablesLeft() <= 0){
             Toast.makeText(this, "No traps left", Toast.LENGTH_SHORT).show();
         }
-        else
-        {
-            if (removingPlantable)
-            {
+        else{
+            if (removingPlantable){
                 removingPlantable = false;
             }
-            else if (plantableToPlace == null)
-            {
+            else if (plantableToPlace == null){
                 plantableToPlace = map.addMarker(new MarkerOptions()
                         .position(latLng)
                         .title(getString(R.string.placeTrap))
@@ -328,16 +313,14 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
                 plantableToPlace.showInfoWindow();
             }
-            else
-            {
+            else{
                 plantableToPlace.remove();
                 plantableToPlace = null;
             }
         }
     }
 
-    private void updatePlantableCount()
-    {
+    private void updatePlantableCount(){
         if (trapsLeftToggle) {
             ((TextView) findViewById(R.id.your_plantable_count))
                     .setText(String.valueOf(gameController.getNumUserPlantablesLeft()) + "\ntraps left");
@@ -348,20 +331,16 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     }
 
     @Override
-    public void onInfoWindowClick(Marker marker)
-    {
+    public void onInfoWindowClick(Marker marker){
         ((Vibrator)getSystemService(VIBRATOR_SERVICE)).vibrate(20);
         // If you're placing a trap
-        if (plantableToPlace != null)
-        {
+        if (plantableToPlace != null){
             addUserPlantable(marker);
         }
 
         // If you're removing a trap
-        else
-        {
-            if (marker.getTitle().equals(getString(R.string.yourTrap)))
-            {
+        else{
+            if (marker.getTitle().equals(getString(R.string.yourTrap))){
                 Plantable plantableToRemove = markerData.get(marker);
                 if (plantableToRemove != null) {
                     markerData.remove(marker);
@@ -374,12 +353,10 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     }
 
     @Override
-    public boolean onMarkerClick(Marker marker)
-    {
+    public boolean onMarkerClick(Marker marker){
         boolean sameMarker = plantableToPlace != null && marker.getPosition().equals(plantableToPlace.getPosition());
         //Always remove the pending marker
-        if (plantableToPlace != null)
-        {
+        if (plantableToPlace != null){
             plantableToPlace.remove();
             plantableToPlace = null;
         }
@@ -398,8 +375,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
     @Override
     public void onCameraChange(CameraPosition cameraPosition) {
-        if (plantableToPlace != null)
-        {
+        if (plantableToPlace != null){
             plantableToPlace.remove();
             plantableToPlace = null;
         }
@@ -410,15 +386,13 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
      * @param view
      */
     @Override
-    public void onClick(View view)
-    {
+    public void onClick(View view){
         if (view.equals(findViewById(R.id.sweep_button))) {
             if (sweep(view)) {
                 sweepCooldownAnimation();
             }
         }
-        else if (view.equals(findViewById(R.id.drawer_button)))
-        {
+        else if (view.equals(findViewById(R.id.drawer_button))){
             pullDrawerOut(view);
         }
     }
@@ -445,26 +419,22 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     /**
      * Forces the high scores list to refresh
      */
-    public void updateHighScores()
-    {
+    public void updateHighScores(){
         listAdapter.notifyDataSetChanged();
     }
 
     /**
      * Removes all user mines currently shown and redraws them
      */
-    public void updateMyMines()
-    {
-        for (Marker marker : markerData.keySet())
-        {
+    public void updateMyMines(){
+        for (Marker marker : markerData.keySet()){
             marker.remove();
         }
 
         markerData.clear();
 
         List<Plantable> myPlantables = gameController.getUserPlantables();
-        synchronized (myPlantables)
-        {
+        synchronized (myPlantables){
             //Add map markers for previously set mines
             for (int i = 0; i < myPlantables.size(); ++i) {
                 markerData.put(map.addMarker(new MarkerOptions()
@@ -481,10 +451,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     /**
      * Removes the markers for all mines revealed in the last sweep
      */
-    public void removeSweepedMines()
-    {
-        for (Marker sweepMine : sweepMinesVisible)
-        {
+    public void removeSweepedMines(){
+        for (Marker sweepMine : sweepMinesVisible){
             sweepMine.remove();
         }
     }
@@ -495,16 +463,14 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
      * notification if it already exists. There can be only one notification from this app at a time.
      * @param name The name of the user who set the trap that just trapped the user.
      */
-    public void displayTrapped(String name)
-    {
+    public void displayTrapped(String name){
         //Add the new killer to the list and update the death count
         killers.add(name);
         ++deathCount;
 
         //Create the long string listing all killers
         StringBuilder killersList = new StringBuilder();
-        for (String killer : killers)
-        {
+        for (String killer : killers){
             if (killersList.length() > 0)
                 killersList.append(", ");
             killersList.append(killer);
@@ -537,8 +503,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
      * steps through a series of showcase views designed to lead the user through the major elements
      * of the game.
      */
-    public void showTutorial()
-    {
+    public void showTutorial(){
         final GameController realController = gameController;
         gameController = new TutorialGameController(gameController.getUser(), (LocationManager) getSystemService(Context.LOCATION_SERVICE), this);
 
@@ -631,8 +596,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                     //Method for ending the remove section
                     @Override
                     public void onInfoWindowClick(Marker marker) {
-                        if (plantableToPlace == null || (plantableToPlace != null && !marker.getPosition().equals(plantableToPlace.getPosition())))
-                        {
+                        if (plantableToPlace == null || (plantableToPlace != null && !marker.getPosition().equals(plantableToPlace.getPosition()))){
                             remove.hide();
                             sweep.show();
                             thisref.map.setOnInfoWindowClickListener(thisref);
@@ -688,8 +652,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         ((Vibrator)getSystemService(VIBRATOR_SERVICE)).vibrate(500);
 
         //Check to see if we last sweeped too recently
-        if (lastSweeped != null && new Date().getTime() - lastSweeped.getTime() < 1000*60*SWEEP_COOLDOWN)
-        {
+        if (lastSweeped != null && new Date().getTime() - lastSweeped.getTime() < 1000*60*SWEEP_COOLDOWN){
 
             long minutesLeft = (SWEEP_COOLDOWN*60*1000 - (new Date().getTime() - lastSweeped.getTime()))/1000/60 + 1;
             Toast.makeText(this, "Can't sweep again for "+minutesLeft+" minutes.", Toast.LENGTH_SHORT).show();
@@ -698,8 +661,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
         //Get nearby enemy mines, and add markers to the map
         List<Plantable> enemyTraps = gameController.getEnemyPlantablesWithinRadius(getCurLatLng(), SWEEP_RADIUS);
-        for (Plantable plantable : enemyTraps)
-        {
+        for (Plantable plantable : enemyTraps) {
             Marker marker = map.addMarker(new MarkerOptions()
                     .position(plantable.getLocation())
                     .title(getString(R.string.watchOut))
@@ -712,8 +674,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
         //Set a timer to remove the traps after the sweep duration
         AnimatorSet sweepSet = new AnimatorSet();
-        for (Marker sweepMine : sweepMinesVisible)
-        {
+        for (Marker sweepMine : sweepMinesVisible){
             ObjectAnimator sweepAnimation = ObjectAnimator.ofFloat(sweepMine, "Alpha", 1, 0);
             sweepSet.play(sweepAnimation);
         }
@@ -731,8 +692,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         return true;
     }
 
-    public void sweepCooldownAnimation()
-    {
+    public void sweepCooldownAnimation() {
         ((VariableArcShape)cooldownShape.getShape()).setSweepAngle(360f);
         AnimatorSet set = new AnimatorSet();
         ObjectAnimator circleAnimation = ObjectAnimator.ofFloat(cooldownShape.getShape(), "SweepAngle", 350, 0);
@@ -753,11 +713,9 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
      * enemy mines and high scores
      * @param curLoc The current location of the user
      */
-    public void updateLocation(final LatLng curLoc)
-    {
+    public void updateLocation(final LatLng curLoc){
         //Ensures that we don't update too frequently
-        if (lastLocation == null || GameController.distanceBetween(lastLocation, curLoc) < UPDATE_DISTANCE)
-        {
+        if (lastLocation == null || GameController.distanceBetween(lastLocation, curLoc) < UPDATE_DISTANCE){
             lastLocation = curLoc;
 
             //Construct JSON object to send to server
@@ -774,8 +732,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                 e.printStackTrace();
             }
 
-            class PostLocationTask extends PostJsonTask<JSONArray>
-            {
+            class PostLocationTask extends PostJsonTask<JSONArray> {
 
                 public PostLocationTask(String serverAddress, String endpoint) {
                     super(serverAddress, endpoint);
@@ -793,20 +750,16 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
 
                         //Update the enemy plantables
-                        synchronized (gameController.getEnemyPlantables())
-                        {
+                        synchronized (gameController.getEnemyPlantables()) {
                             gameController.getEnemyPlantables().clear();
-                            for (int i = 0; i < plantables.length(); ++i)
-                            {
+                            for (int i = 0; i < plantables.length(); ++i) {
                                 gameController.getEnemyPlantables().add(new Plantable(plantables.getJSONObject(i)));
                             }
                         }
                         //Update the user plantables
-                        synchronized (gameController.getUserPlantables())
-                        {
+                        synchronized (gameController.getUserPlantables()) {
                             gameController.getUserPlantables().clear();
-                            for (int i = 0; i < myPlantables.length(); ++i)
-                            {
+                            for (int i = 0; i < myPlantables.length(); ++i) {
                                 gameController.getUserPlantables().add(new Plantable(myPlantables.getJSONObject(i)));
                             }
                         }
@@ -818,16 +771,12 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                 }
 
                 @Override
-                protected void onPostExecute(JSONArray newHighScores)
-                {
+                protected void onPostExecute(JSONArray newHighScores) {
                     //We have to do the high score updating in the main thread
-                    if (newHighScores != null)
-                    {
-                        synchronized (gameController.getHighScores())
-                        {
+                    if (newHighScores != null) {
+                        synchronized (gameController.getHighScores()) {
                             gameController.getHighScores().clear();
-                            for (int i = 0; i < newHighScores.length(); ++i)
-                            {
+                            for (int i = 0; i < newHighScores.length(); ++i) {
                                 try {
                                     gameController.getHighScores().add(new PlayerInfo(newHighScores.getJSONObject(i)));
                                 } catch (JSONException e) {
@@ -855,11 +804,9 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
      * server for those mines
      * @param curLoc The current location of the user
      */
-    public void checkForCollisions(LatLng curLoc)
-    {
+    public void checkForCollisions(LatLng curLoc) {
         List<Plantable> possibleCollisions = gameController.checkForCollisions(curLoc);
-        for (final Plantable toExplode : possibleCollisions)
-        {
+        for (final Plantable toExplode : possibleCollisions) {
             //Construct JSON object to send to server
             JSONObject toSend = new JSONObject();
             try {
@@ -869,8 +816,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                 e.printStackTrace();
             }
 
-            class PostExplodeTask extends PostJsonTask<String>
-            {
+            class PostExplodeTask extends PostJsonTask<String> {
                 public PostExplodeTask(String serverAddress, String endpoint) {
                     super(serverAddress, endpoint);
                 }
@@ -885,8 +831,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                     try {
                         JSONObject responseObject = new JSONObject(response);
                         boolean success = responseObject.getBoolean("success");
-                        if (success)
-                        {
+                        if (success) {
                             return responseObject.getString("ownerName");
                         }
                     } catch (JSONException e) {
@@ -896,10 +841,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                 }
 
                 @Override
-                protected void onPostExecute(String exploded)
-                {
-                    if (exploded != null)
-                    {
+                protected void onPostExecute(String exploded) {
+                    if (exploded != null) {
                         displayTrapped(exploded);
                         gameController.removeEnemyPlantable(toExplode);
                     }
@@ -913,8 +856,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
      * Handles calls to server to place a new plantable
      * @param marker The marker representing the plantable to add
      */
-    public void addUserPlantable(final Marker marker)
-    {
+    public void addUserPlantable(final Marker marker) {
         //Update marker UI and internal state
         marker.setAlpha(1);
         marker.setDraggable(false);
@@ -935,29 +877,24 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         }
 
         //Make request - use an async task
-        class AddPlantableTask extends PostJsonTask<Plantable>
-        {
+        class AddPlantableTask extends PostJsonTask<Plantable> {
             public AddPlantableTask(String serverAddress, String endpoint) {
                 super(serverAddress, endpoint);
             }
 
             @Override
-            protected void onPostExecute(Plantable toAdd)
-            {
-                if (toAdd != null)
-                {
+            protected void onPostExecute(Plantable toAdd) {
+                if (toAdd != null) {
                     //Update remaining internal state
                     gameController.addUserPlantable(toAdd);
                     markerData.put(marker, toAdd);
                     updatePlantableCount();
                 }
-                else
-                {
+                else {
                     //If we failed to add, and there's no pending plantable re-make this one pending
                     Toast.makeText(self, "Problem with server, trap wasn't placed", Toast.LENGTH_SHORT).show();
 
-                    if (plantableToPlace == null)
-                    {
+                    if (plantableToPlace == null) {
                         marker.setAlpha((float) 0.5);
                         marker.setDraggable(true);
                         marker.setTitle(getString(R.string.placeTrap));
@@ -965,8 +902,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                         plantableToPlace = marker;
                     }
                     //Otherwise, just forget it ever existed
-                    else
-                    {
+                    else {
                         //TODO: This behavior probably isn't ideal - we should rethink it
                         marker.remove();
                     }
@@ -991,8 +927,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
      * Handles calls to the server to attempt to remove a user plantable
      * @param toRemove The plantable to remove
      */
-    public void removeUserPlantable(final Plantable toRemove)
-    {
+    public void removeUserPlantable(final Plantable toRemove) {
         //Construct JSON object to send to server
         JSONObject toSend = new JSONObject();
         try {
@@ -1002,8 +937,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         }
 
         //Make request - use an async task
-        class RemovePlantableTask extends PostJsonTask<Boolean>
-        {
+        class RemovePlantableTask extends PostJsonTask<Boolean> {
 
             public RemovePlantableTask(String serverAddress, String endpoint) {
                 super(serverAddress, endpoint);
@@ -1018,11 +952,9 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             }
 
             @Override
-            protected void onPostExecute(Boolean success)
-            {
+            protected void onPostExecute(Boolean success) {
                 //If we didn't succeed, we need to put it back on the map because it's not gone
-                if (!success)
-                {
+                if (!success) {
                     Toast.makeText(self, "Problem with server, trap wasn't removed", Toast.LENGTH_SHORT).show();
                     markerData.put(map.addMarker(new MarkerOptions()
                             .position(toRemove.getLocation())
@@ -1032,13 +964,11 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
                 }
                 //Update the data structure for success
-                else
-                {
+                else {
                     gameController.removeUserPlantable(toRemove);
                     updatePlantableCount();
                 }
             }
-
         }
         new RemovePlantableTask(serverAddress, "/api/removemine").execute(toSend);
     }
@@ -1048,8 +978,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     ---------------- Helper methods
      */
 
-    private LatLng getCurLatLng()
-    {
+    private LatLng getCurLatLng() {
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         Location curLocation = locationManager.getLastKnownLocation(locationManager.getBestProvider(new Criteria(), true));
         LatLng curLoc = new LatLng(curLocation.getLatitude(), curLocation.getLongitude());
@@ -1068,8 +997,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
      * @param toCheck
      * @return
      */
-    protected boolean markerVisible(Marker toCheck)
-    {
+    protected boolean markerVisible(Marker toCheck) {
         return map.getProjection().getVisibleRegion().latLngBounds.contains(toCheck.getPosition());
     }
 }

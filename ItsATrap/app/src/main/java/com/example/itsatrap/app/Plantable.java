@@ -10,8 +10,7 @@ import java.util.Date;
 /**
  * Created by maegereg on 5/10/14.
  */
-public class Plantable
-{
+public class Plantable{
 
     private String plantableId;
     private String ownerId;
@@ -34,8 +33,7 @@ public class Plantable
         this.radius = 2;
     }
 
-    public Plantable(String plantableId, String ownerId, LatLng location, Date plantTime, long duration, float radius)
-    {
+    public Plantable(String plantableId, String ownerId, LatLng location, Date plantTime, long duration, float radius) {
         this.plantableId = plantableId;
         this.ownerId = ownerId;
         this.location = location;

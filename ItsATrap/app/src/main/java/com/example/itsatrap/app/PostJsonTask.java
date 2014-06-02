@@ -22,13 +22,11 @@ import java.net.MalformedURLException;
  * parseResponse should return any data that needs to be passed to onPostExecute, which will be of type T
  * Users are also responsible for overriding onPostExecute
  */
-public abstract class PostJsonTask<T> extends AsyncTask<JSONObject, Void, T>
-{
+public abstract class PostJsonTask<T> extends AsyncTask<JSONObject, Void, T>{
     private String serverAddress;
     private String endpoint;
 
-    public PostJsonTask(String serverAddress, String endpoint)
-    {
+    public PostJsonTask(String serverAddress, String endpoint){
         this.serverAddress = serverAddress;
         this.endpoint = endpoint;
     }
@@ -51,8 +49,7 @@ public abstract class PostJsonTask<T> extends AsyncTask<JSONObject, Void, T>
             e.printStackTrace();
         }
         finally {
-            if (connection != null)
-            {
+            if (connection != null){
                 connection.disconnect();
             }
         }
@@ -61,13 +58,11 @@ public abstract class PostJsonTask<T> extends AsyncTask<JSONObject, Void, T>
         return parseResponse(response);
     }
 
-    public static String getStreamContent(InputStream stream)
-    {
+    public static String getStreamContent(InputStream stream){
         StringBuilder builder = new StringBuilder();
         int c;
         try {
-            while ((c = stream.read()) != -1 )
-            {
+            while ((c = stream.read()) != -1 ) {
                 builder.append((char)c);
             }
 

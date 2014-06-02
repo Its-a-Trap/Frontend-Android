@@ -3,8 +3,7 @@ package com.example.itsatrap.app;
 /**
  * Created by maegereg on 5/10/14.
  */
-public class User
-{
+public class User{
 
     private String email;
     private String id;
@@ -15,8 +14,7 @@ public class User
         this.email = email;
     }
 
-    public User(String email, String id, String username)
-    {
+    public User(String email, String id, String username) {
         this.email = email;
         this.id = id;
         this.username = username;

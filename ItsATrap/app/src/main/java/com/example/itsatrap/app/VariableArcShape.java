@@ -40,8 +40,7 @@ public class VariableArcShape extends RectShape {
 
     @Override
     public void draw(Canvas canvas, Paint paint) {
-        if (!isSet)
-        {
+        if (!isSet) {
             int leftClip = (canvas.getWidth() - width);
             int rightClip = canvas.getWidth() - leftClip;
             int topClip = canvas.getHeight() - height;
@@ -51,33 +50,27 @@ public class VariableArcShape extends RectShape {
         canvas.drawArc(rect(), mStart, mSweep, true, paint);
     }
 
-    public void setStartAngle(float newStartAngle)
-    {
+    public void setStartAngle(float newStartAngle) {
         mStart = newStartAngle;
     }
 
-    public void setSweepAngle(float newSweepAngle)
-    {
+    public void setSweepAngle(float newSweepAngle) {
         mSweep = newSweepAngle;
     }
 
-    public float getStartAngle()
-    {
+    public float getStartAngle() {
         return mStart;
     }
 
-    public float getSweepAngle()
-    {
+    public float getSweepAngle() {
         return mSweep;
     }
 
-    public void setWidth(int width)
-    {
+    public void setWidth(int width) {
         this.width = width;
     }
 
-    public void setHeight(int height)
-    {
+    public void setHeight(int height) {
         this.height = height;
     }
 }
