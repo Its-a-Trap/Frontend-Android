@@ -54,6 +54,7 @@
                     android:layout_alignBottom="@+id/your_plantable_image"
                     android:gravity="center_horizontal"
                     android:layout_margin="6dp"
+                    android:textSize="13dp"
                     android:text="\ntraps left" />
             </RelativeLayout>
 

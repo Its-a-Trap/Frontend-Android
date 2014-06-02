@@ -25,6 +25,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -71,6 +72,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     private HashMap<Marker, Plantable> markerData;
 
     private SharedPreferences sharedPrefs;
+
+    private boolean trapsLeftToggle = true;
 
     private Date lastSweeped;
     private List<Marker> sweepMinesVisible;
@@ -193,6 +196,26 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
             }
         });
+
+        ImageView trapsLeftImg = (ImageView) findViewById(R.id.your_plantable_image);
+        // set a onclick listener for when the button gets clicked
+        trapsLeftImg.setOnClickListener(new View.OnClickListener() {
+            // Start new list activity
+            public void onClick(View v) {
+                if (trapsLeftToggle)
+                {
+                    ((TextView) findViewById(R.id.your_plantable_count))
+                            .setText(String.valueOf(gameController.getNumUserPlantablesUsed()) + "\ntraps placed");
+                    trapsLeftToggle = false;
+                }
+                else
+                {
+                    ((TextView) findViewById(R.id.your_plantable_count))
+                            .setText(String.valueOf(gameController.getNumUserPlantablesLeft())+"\ntraps left");
+                    trapsLeftToggle = true;
+                }
+            }
+        });
     }
 
     public void onStart()
@@ -263,6 +286,17 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         }
     }
 
+    private void updatePlantableCount()
+    {
+        if (trapsLeftToggle) {
+            ((TextView) findViewById(R.id.your_plantable_count))
+                    .setText(String.valueOf(gameController.getNumUserPlantablesLeft()) + "\ntraps left");
+        } else {
+            ((TextView) findViewById(R.id.your_plantable_count))
+                    .setText(String.valueOf(gameController.getNumUserPlantablesUsed()) + "\ntraps placed");
+        }
+    }
+
     @Override
     public void onInfoWindowClick(Marker marker)
     {
@@ -278,12 +312,12 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             if (marker.getTitle().equals(getString(R.string.yourTrap)))
             {
                 Plantable plantableToRemove = markerData.get(marker);
-                markerData.remove(marker);
-                marker.remove();
-                removeUserPlantable(plantableToRemove);
-                ((TextView) findViewById(R.id.your_plantable_count))
-                        .setText(String.valueOf(gameController.getNumUserPlantablesLeft())+"\ntraps left");
-                removingPlantable = false;
+                if (plantableToRemove != null) {
+                    markerData.remove(marker);
+                    marker.remove();
+                    removeUserPlantable(plantableToRemove);
+                    removingPlantable = false;
+                }
             }
         }
     }
@@ -384,8 +418,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                         myPlantables.get(i)
                 );
             }
-            ((TextView) findViewById(R.id.your_plantable_count))
-                    .setText(String.valueOf(gameController.getNumUserPlantablesLeft()) + "\ntraps left");
+            updatePlantableCount();
         }
     }
 
@@ -814,8 +847,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                     //Update remaining internal state
                     gameController.addUserPlantable(toAdd);
                     markerData.put(marker, toAdd);
-                    ((TextView) findViewById(R.id.your_plantable_count))
-                            .setText(String.valueOf(gameController.getNumUserPlantablesLeft()) + "\ntraps left");
+                    updatePlantableCount();
                 }
                 else
                 {
@@ -901,8 +933,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                 else
                 {
                     gameController.removeUserPlantable(toRemove);
-                    ((TextView) findViewById(R.id.your_plantable_count))
-                            .setText(String.valueOf(gameController.getNumUserPlantablesLeft()) + "\ntraps left");
+                    updatePlantableCount();
                 }
             }
 
