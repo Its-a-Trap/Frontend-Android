@@ -6,6 +6,7 @@ TO DO:
 - traps expire / go rogue
 - Toast when the place / remove call to the server doesn't work, so if you're removing, a trap will disappear from your gui, but not from the server, so the next update it will re-appear
 - Make it so tutorial preserves state on rotation
+- Hug Calder
 
 
 EASY QUICK:

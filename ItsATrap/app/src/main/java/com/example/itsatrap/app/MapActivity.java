@@ -1,5 +1,7 @@
 package com.example.itsatrap.app;
 
+import android.os.Vibrator;
+import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
@@ -240,6 +242,15 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         stopService(intent);
     }
 
+    @Override
+    protected void onDestroy() {
+        suicide();
+        super.onDestroy();
+    }
+
+    private void suicide() {
+        // TODO: Implement me
+    }
 
     /*
     ---------------- Override event listeners
@@ -301,6 +312,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     @Override
     public void onInfoWindowClick(Marker marker)
     {
+        ((Vibrator)getSystemService(VIBRATOR_SERVICE)).vibrate(20);
         // If you're placing a trap
         if (plantableToPlace != null)
         {
@@ -432,17 +444,6 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         for (Marker sweepMine : sweepMinesVisible)
         {
             sweepMine.remove();
-        }
-    }
-
-    /**
-     * Removes the markers for all mines revealed in the last sweep
-     */
-    public void setSweepedMineOpacity(double opacity)
-    {
-        for (Marker sweepMine : sweepMinesVisible)
-        {
-            sweepMine.setAlpha((float)opacity);
         }
     }
 
@@ -637,6 +638,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
      */
     public void sweep(View view)
     {
+        ((Vibrator)getSystemService(VIBRATOR_SERVICE)).vibrate(500);
+
         //Check to see if we last sweeped too recently
         if (lastSweeped != null && new Date().getTime() - lastSweeped.getTime() < 1000*60*SWEEP_COOLDOWN)
         {
@@ -660,7 +663,22 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         lastSweeped = new Date();
 
         //Set a timer to remove the traps after the sweep duration
-        new SweepTimerTask(100, 1000*SWEEP_DURATION);
+        AnimatorSet sweepSet = new AnimatorSet();
+        for (Marker sweepMine : sweepMinesVisible)
+        {
+            ObjectAnimator sweepAnimation = ObjectAnimator.ofFloat(sweepMine, "Alpha", 1, 0);
+            sweepSet.play(sweepAnimation);
+        }
+        sweepSet.setDuration(1000*SWEEP_DURATION);
+        sweepSet.setInterpolator(new LinearInterpolator());
+        sweepSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                removeSweepedMines();
+            }
+        });
+        sweepSet.start();
 
         // Do pie shit
         VariableArcShape pie = (VariableArcShape)cooldownShape.getShape();
@@ -680,42 +698,6 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             }
         });
         set.start();
-    }
-    
-    class SweepTimerTask extends TimerTask {
-        int updateFrequency;
-        int timeLeft;
-        
-        SweepTimerTask(int updateFrequency, int timeLeft) {
-            this.updateFrequency = updateFrequency;
-            this.timeLeft = timeLeft;
-
-            Date afterSweepDuration = new Date();
-            afterSweepDuration.setTime(afterSweepDuration.getTime() + updateFrequency);
-            Timer sweepTimer = new Timer(true);
-            sweepTimer.schedule(this, afterSweepDuration);
-        }
-        
-        @Override
-        public void run() {
-            if (timeLeft > 0) {
-                thisref.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        thisref.setSweepedMineOpacity(timeLeft/1000.0/SWEEP_DURATION);
-                    }
-                });
-
-                new SweepTimerTask(updateFrequency, timeLeft-updateFrequency);
-            } else {
-                thisref.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        thisref.removeSweepedMines();
-                    }
-                });
-            }
-        }
     }
 
     /**

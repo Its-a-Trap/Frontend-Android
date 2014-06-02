@@ -48,6 +48,7 @@
     <uses-permission android:name="com.example.itsatrap.app.permission.C2D_MESSAGE" />
 
     <!-- non-Push -->
+    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
