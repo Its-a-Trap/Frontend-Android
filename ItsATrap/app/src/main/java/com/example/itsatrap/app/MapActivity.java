@@ -191,7 +191,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         mapView = (MapView)findViewById(R.id.map_view);
         mapView.setMapActivity(this);
 
-        if (!sharedPrefs.contains(getString(R.string.TutorialCompleteFlag)))
+        if (true || !sharedPrefs.contains(getString(R.string.TutorialCompleteFlag)))
         {
             showTutorial();
             SharedPreferences.Editor editor = sharedPrefs.edit();
@@ -365,7 +365,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     public void onClick(View view)
     {
         if (view.equals(findViewById(R.id.sweep_button)))
-            sweep(view);
+            if (sweep(view))
+                sweepCooldownAnimation();
         else if (view.equals(findViewById(R.id.drawer_button)))
             pullDrawerOut(view);
     }
@@ -537,7 +538,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         final ShowcaseView sweep = new ShowcaseView.Builder(this)
                 .setTarget(new ViewTarget(R.id.sweep_button, this))
                 .setContentTitle("Sweep")
-                .setContentText("You can sweep to reveal enemy mines on the map.")
+                .setContentText("You can sweep to reveal enemy mines on the map. You can only sweep every "+SWEEP_COOLDOWN+" minutes.")
                 .build();
         sweep.hideButton();
         sweep.hide();
@@ -564,7 +565,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                         sweep.hide();
                         yourScore.show();
                         thisref.findViewById(R.id.sweep_button).setOnClickListener(thisref);
-                        thisref.onClick(view);
+                        thisref.sweep(view);
                     }
                 });
             }
@@ -608,7 +609,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
         final ShowcaseView welcome = new ShowcaseView.Builder(this)
                 .setContentTitle("Welcome")
-                .setContentText("It's a trap is a game of cunning and deception.\n Earn points by placing traps where other people will walk over them, and avoid getting trapped yourself.")
+                .setContentText("It's a trap is a game of cunning and \ndeception. Earn points by placing traps \nwhere other people will walk over them, \nand avoid getting trapped yourself.")
                 .build();
         welcome.overrideButtonClick(new View.OnClickListener() {
             //Method for ending the welcome section
@@ -636,15 +637,16 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     /**
      *  Performs a "sweep", revealing all enemy mines within the sweep radius on the map for the sweep duration
      * @param view
+     * @return Whether or not the sweep was triggered
      */
-    public void sweep(View view)
+    public boolean sweep(View view)
     {
         //Check to see if we last sweeped too recently
         if (lastSweeped != null && new Date().getTime() - lastSweeped.getTime() < 1000*60*SWEEP_COOLDOWN)
         {
             long minutesLeft = (SWEEP_COOLDOWN*60*1000 - (new Date().getTime() - lastSweeped.getTime()))/1000/60 + 1;
             Toast.makeText(this, "Can't sweep again for "+minutesLeft+" minutes.", Toast.LENGTH_SHORT).show();
-            return;
+            return false;
         }
 
         //Get nearby enemy mines, and add markers to the map
@@ -664,7 +666,11 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         //Set a timer to remove the traps after the sweep duration
         new SweepTimerTask(100, 1000*SWEEP_DURATION);
 
+        return true;
+    }
 
+    public void sweepCooldownAnimation()
+    {
         ((VariableArcShape)cooldownShape.getShape()).setSweepAngle(360f);
         AnimatorSet set = new AnimatorSet();
         ObjectAnimator circleAnimation = ObjectAnimator.ofFloat(cooldownShape.getShape(), "SweepAngle", 350, 0);
@@ -679,6 +685,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         });
         set.start();
     }
+
     
     class SweepTimerTask extends TimerTask {
         int updateFrequency;
