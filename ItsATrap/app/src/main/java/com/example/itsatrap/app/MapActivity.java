@@ -90,7 +90,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     private ShapeDrawable cooldownShape;
 
     //The sweep cooldown, in minutes
-    private final int SWEEP_COOLDOWN = 30;
+    private final int SWEEP_COOLDOWN = 1;
     //The amount of time sweeped mines should be visible, in seconds
     private final int SWEEP_DURATION = 5;
     //The radius of the sweep, in meters
