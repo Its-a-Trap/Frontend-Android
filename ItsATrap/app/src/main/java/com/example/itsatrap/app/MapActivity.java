@@ -412,11 +412,15 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     @Override
     public void onClick(View view)
     {
-        if (view.equals(findViewById(R.id.sweep_button)))
-            if (sweep(view))
+        if (view.equals(findViewById(R.id.sweep_button))) {
+            if (sweep(view)) {
                 sweepCooldownAnimation();
+            }
+        }
         else if (view.equals(findViewById(R.id.drawer_button)))
+        {
             pullDrawerOut(view);
+        }
     }
 
     @Override
