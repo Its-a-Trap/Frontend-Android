@@ -5,20 +5,18 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.graphics.Point;
 import android.graphics.drawable.ShapeDrawable;
 import android.location.Criteria;
 import android.location.LocationListener;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -40,12 +38,8 @@ import android.widget.Toast;
 
 import com.github.amlcurran.showcaseview.OnShowcaseEventListener;
 import com.github.amlcurran.showcaseview.ShowcaseView;
-import com.github.amlcurran.showcaseview.targets.ActionViewTarget;
 import com.github.amlcurran.showcaseview.targets.PointTarget;
 import com.github.amlcurran.showcaseview.targets.ViewTarget;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
 
@@ -53,7 +47,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -65,6 +58,7 @@ import java.util.TimerTask;
 public class MapActivity extends Activity implements GoogleMap.OnMapClickListener,
         GoogleMap.OnInfoWindowClickListener, LocationListener, GoogleMap.OnMarkerClickListener, GoogleMap.OnCameraChangeListener, View.OnClickListener
 {
+    public static final String TAG = "IATMapActivity";
     private MapActivity self;
 
     private MapView mapView;
@@ -100,13 +94,23 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     //The sweep cooldown, in minutes
     private final int SWEEP_COOLDOWN = 30;
     //The amount of time sweeped mines should be visible, in seconds
-    private final int SWEEP_DURATION = 30;
+    private final int SWEEP_DURATION = 5;
     //The radius of the sweep, in meters
     private final int SWEEP_RADIUS = 1000;
     //Register a new location with the server after travelling this far (currently 5 miles)
     private final double UPDATE_DISTANCE = 8046.72;
 
     public static final String serverAddress = "http://107.170.182.13:3000";
+
+
+    private Intent intent;
+    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            updateLocation(getCurLatLng());
+            Log.d(TAG + "PUSH", "Received push notification!!");
+        }
+    };
 
 
 
@@ -117,6 +121,9 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
+
+        // Setup Push
+        intent = new Intent(this, GcmIntentService.class);
 
         //Initialize internal state information
         sweepMinesVisible = new ArrayList<Marker>();
@@ -212,14 +219,27 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         });
     }
 
-    public void onStart()
-    {
+    public void onStart() {
         super.onStart();
         //Since the user has opened the app, remove the notification and clear the death records
         killers.clear();
         deathCount = 0;
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.cancel(0);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        startService(intent);
+        registerReceiver(broadcastReceiver, new IntentFilter(GcmIntentService.BROADCAST_ACTION));
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        unregisterReceiver(broadcastReceiver);
+        stopService(intent);
     }
 
 
@@ -418,6 +438,17 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     }
 
     /**
+     * Removes the markers for all mines revealed in the last sweep
+     */
+    public void setSweepedMineOpacity(double opacity)
+    {
+        for (Marker sweepMine : sweepMinesVisible)
+        {
+            sweepMine.setAlpha((float)opacity);
+        }
+    }
+
+    /**
      * Handles displaying a notification informing the user they they have been trapped.
      * Creates a system-level notification if one does not already exists, or updates an existing
      * notification if it already exists. There can be only one notification from this app at a time.
@@ -453,7 +484,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
         //Set up expanded version of notification with full explanation
         NotificationCompat.BigTextStyle bigStyle = new NotificationCompat.BigTextStyle();
-        bigStyle.bigText("You have been trapped "+deathCount+" times by "+killersList.toString()+". You lost "+50*deathCount+" points.");
+        bigStyle.bigText("You have been trapped " + deathCount + " times by " + killersList.toString() + ". You lost " + 50 * deathCount + " points.");
         mBuilder.setStyle(bigStyle);
 
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -630,24 +661,11 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         //Record when we last sweeped to prevent excessive sweeping
         lastSweeped = new Date();
 
-        Timer sweepTimer = new Timer(true);
-        Date afterSweepDuration = new Date();
-        afterSweepDuration.setTime(afterSweepDuration.getTime()+1000*SWEEP_DURATION);
-
         //Set a timer to remove the traps after the sweep duration
-        sweepTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                thisref.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        thisref.removeSweepedMines();
-                    }
-                });
-            }
-        }, afterSweepDuration);
+        new SweepTimerTask(100, 1000*SWEEP_DURATION);
 
 
+        ((VariableArcShape)cooldownShape.getShape()).setSweepAngle(360f);
         AnimatorSet set = new AnimatorSet();
         ObjectAnimator circleAnimation = ObjectAnimator.ofFloat(cooldownShape.getShape(), "SweepAngle", 350, 0);
         set.play(circleAnimation);
@@ -660,6 +678,42 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             }
         });
         set.start();
+    }
+    
+    class SweepTimerTask extends TimerTask {
+        int updateFrequency;
+        int timeLeft;
+        
+        SweepTimerTask(int updateFrequency, int timeLeft) {
+            this.updateFrequency = updateFrequency;
+            this.timeLeft = timeLeft;
+
+            Date afterSweepDuration = new Date();
+            afterSweepDuration.setTime(afterSweepDuration.getTime() + updateFrequency);
+            Timer sweepTimer = new Timer(true);
+            sweepTimer.schedule(this, afterSweepDuration);
+        }
+        
+        @Override
+        public void run() {
+            if (timeLeft > 0) {
+                thisref.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        thisref.setSweepedMineOpacity(timeLeft/1000.0/SWEEP_DURATION);
+                    }
+                });
+
+                new SweepTimerTask(updateFrequency, timeLeft-updateFrequency);
+            } else {
+                thisref.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        thisref.removeSweepedMines();
+                    }
+                });
+            }
+        }
     }
 
     /**
@@ -683,6 +737,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                 toSend.put("location", loc);
                 toSend.put("token", sharedPrefs.getString("RegId",""));
                 toSend.put("user", gameController.getUser().getId());
+                toSend.put("client_type","Android");
             } catch (JSONException e) {
                 e.printStackTrace();
             }
