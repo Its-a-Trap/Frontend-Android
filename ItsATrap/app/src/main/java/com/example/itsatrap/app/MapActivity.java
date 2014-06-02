@@ -112,6 +112,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            Log.d(TAG + "PUSH message", intent.getExtras().getString("message"));
             updateLocation(getCurLatLng());
             Log.d(TAG + "PUSH", "Received push notification!!");
         }
@@ -264,8 +265,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     @Override
     public void onPause() {
         super.onPause();
-        unregisterReceiver(broadcastReceiver);
-        stopService(intent);
+//        unregisterReceiver(broadcastReceiver);
+//        stopService(intent);
     }
 
     @Override
