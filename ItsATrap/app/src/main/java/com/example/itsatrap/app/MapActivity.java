@@ -29,10 +29,12 @@ import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -148,7 +150,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         View coolDownDisplay = findViewById(R.id.cooldown_display);
         View sweepButton = findViewById(R.id.sweep_button);
         cooldownShape = new ShapeDrawable(new VariableArcShape(0f, 0f, sweepButton.getWidth(), sweepButton.getHeight()));
-        cooldownShape.getPaint().setARGB(128, 255, 255, 255);
+        cooldownShape.getPaint().setARGB(180, 255, 255, 255);
         coolDownDisplay.setBackground(cooldownShape);
 
         // Get a handle to the Map Fragment
@@ -645,15 +647,11 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             }
         }, afterSweepDuration);
 
-        VariableArcShape pie = (VariableArcShape)cooldownShape.getShape();
-        ((VariableArcShape)cooldownShape.getShape()).setSweepAngle(360f);
-        View sweepButton = findViewById(R.id.sweep_button);
-        pie.setHeight(sweepButton.getHeight());// - sweepButton.getPaddingTop() - sweepButton.getPaddingBottom());
-        pie.setWidth(sweepButton.getWidth());// - sweepButton.getPaddingLeft() - sweepButton.getPaddingRight());
+
         AnimatorSet set = new AnimatorSet();
         ObjectAnimator circleAnimation = ObjectAnimator.ofFloat(cooldownShape.getShape(), "SweepAngle", 350, 0);
         set.play(circleAnimation);
-        set.setDuration(2000);
+        set.setDuration(SWEEP_COOLDOWN*60*1000);
         set.setInterpolator(new LinearInterpolator());
         circleAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override

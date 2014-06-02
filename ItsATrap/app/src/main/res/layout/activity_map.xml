@@ -30,7 +30,8 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:layout_marginTop="10dp">
 
             <RelativeLayout
                 android:layout_width="wrap_content"
@@ -72,14 +73,19 @@
             <RelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="15dp"
-                android:layout_marginLeft="15dp">
 
-                <Button android:id="@+id/sweep_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="SWEEP"
+                >
+
+
+
+                <ImageView android:id="@+id/sweep_button"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:src="@drawable/sweep2"
+                    android:scaleType="fitCenter"
+                    android:adjustViewBounds="true"
                     />
+
 
                 <ImageView
                     android:id="@+id/cooldown_display"
@@ -88,7 +94,9 @@
                     android:layout_alignLeft="@+id/sweep_button"
                     android:layout_alignRight="@+id/sweep_button"
                     android:layout_alignTop="@+id/sweep_button"
-                    android:layout_alignBottom="@+id/sweep_button"/>
+                    android:layout_alignBottom="@+id/sweep_button"
+                    />
+
 
                 </RelativeLayout>
 
