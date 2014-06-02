@@ -215,7 +215,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             @Override
             public void onDrawerOpened(View drawerView)
             {
-                drawerList.smoothScrollToPosition(yourScoreIndex);
+                drawerList.setSelection(yourScoreIndex);
             }
 
             @Override
