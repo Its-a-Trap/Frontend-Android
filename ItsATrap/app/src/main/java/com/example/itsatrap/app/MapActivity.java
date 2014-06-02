@@ -9,8 +9,10 @@ import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -63,6 +65,7 @@ import java.util.TimerTask;
 public class MapActivity extends Activity implements GoogleMap.OnMapClickListener,
         GoogleMap.OnInfoWindowClickListener, LocationListener, GoogleMap.OnMarkerClickListener, GoogleMap.OnCameraChangeListener, View.OnClickListener
 {
+    public static final String TAG = "IATMapActivity";
     private MapActivity self;
 
     private MapView mapView;
@@ -107,6 +110,16 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     public static final String serverAddress = "http://107.170.182.13:3000";
 
 
+    private Intent intent;
+    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            updateLocation(getCurLatLng());
+            Log.d(TAG+"PUSH", "Received push notification!!");
+        }
+    };
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -115,6 +128,9 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
+
+        // Setup Push
+        intent = new Intent(this, GcmIntentService.class);
 
         //Initialize internal state information
         sweepMinesVisible = new ArrayList<Marker>();
@@ -210,14 +226,27 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         });
     }
 
-    public void onStart()
-    {
+    public void onStart() {
         super.onStart();
         //Since the user has opened the app, remove the notification and clear the death records
         killers.clear();
         deathCount = 0;
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.cancel(0);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        startService(intent);
+        registerReceiver(broadcastReceiver, new IntentFilter(GcmIntentService.BROADCAST_ACTION));
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        unregisterReceiver(broadcastReceiver);
+        stopService(intent);
     }
 
 
@@ -685,6 +714,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                 toSend.put("location", loc);
                 toSend.put("token", sharedPrefs.getString("RegId",""));
                 toSend.put("user", gameController.getUser().getId());
+                toSend.put("client_type","Android");
             } catch (JSONException e) {
                 e.printStackTrace();
             }
