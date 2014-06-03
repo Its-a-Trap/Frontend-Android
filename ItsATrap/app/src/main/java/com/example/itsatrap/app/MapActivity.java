@@ -100,7 +100,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     //The amount of time sweeped mines should be visible, in seconds
     private final int SWEEP_DURATION = 5;
     //The radius of the sweep, in meters
-    private final int SWEEP_RADIUS = 1000;
+    private final int SWEEP_RADIUS = 30;
     //Register a new location with the server after travelling this far (currently 5 miles)
     private final double UPDATE_DISTANCE = 8046.72;
 
