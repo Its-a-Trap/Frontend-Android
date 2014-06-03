@@ -71,7 +71,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     private int yourScore;
 
     private GoogleMap map;
-    private GameController gameController;
+    private static GameController gameController = null;
     private Marker plantableToPlace;
     private boolean removingPlantable;
     private HashMap<Marker, Plantable> markerData;
@@ -147,7 +147,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         findViewById(R.id.sweep_button).setOnClickListener(this);
 
         //Create the game controller object
-        gameController = new GameController(new User(sharedPrefs.getString(getString(R.string.PrefsEmailString), ""), sharedPrefs.getString(getString(R.string.PrefsIdString), ""), sharedPrefs.getString(getString(R.string.PrefsNameString), "")), (LocationManager) getSystemService(Context.LOCATION_SERVICE), this);
+        if (gameController == null)
+            gameController = new GameController(new User(sharedPrefs.getString(getString(R.string.PrefsEmailString), ""), sharedPrefs.getString(getString(R.string.PrefsIdString), ""), sharedPrefs.getString(getString(R.string.PrefsNameString), "")), (LocationManager) getSystemService(Context.LOCATION_SERVICE), this);
 
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawerList = (ListView) findViewById(R.id.left_drawer);
@@ -195,7 +196,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         mapView.setMapActivity(this);
 
         //There are 5 tutorial steps - step 6 means we're done
-        if (true || sharedPrefs.getInt(getString(R.string.TutorialCompleteFlag), 0) > 5){
+        if (sharedPrefs.getInt(getString(R.string.TutorialCompleteFlag), 0) <= 5){
             showTutorial(sharedPrefs.getInt(getString(R.string.TutorialCompleteFlag), 0));
 
         }
@@ -507,7 +508,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     public void showTutorial(int step){
         //Step 5
         final GameController realController = gameController;
-        gameController = new TutorialGameController(gameController.getUser(), (LocationManager) getSystemService(Context.LOCATION_SERVICE), this);
+        if (! (gameController instanceof TutorialGameController))
+            gameController = new TutorialGameController(gameController.getUser(), (LocationManager) getSystemService(Context.LOCATION_SERVICE), this);
 
         final ShowcaseView highScores = new ShowcaseView.Builder(this)
                 .setTarget(new ViewTarget(R.id.drawer_button, this))

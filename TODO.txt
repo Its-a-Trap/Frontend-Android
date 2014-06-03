@@ -2,7 +2,6 @@ TO DO:
 
 - Notifies you when someone else has run into your trap
 - Kill you when you close the app
-- Make it so tutorial preserves state on rotation
 
 
 EASY QUICK:
