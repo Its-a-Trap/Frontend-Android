@@ -194,10 +194,6 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         mapView = (MapView)findViewById(R.id.map_view);
         mapView.setMapActivity(this);
 
-//        SharedPreferences.Editor editor = sharedPrefs.edit();
-//        editor.putInt(getString(R.string.TutorialCompleteFlag), 0);
-//        editor.commit();
-
         //There are 5 tutorial steps - step 6 means we're done
         if (true || sharedPrefs.getInt(getString(R.string.TutorialCompleteFlag), 0) > 5){
             showTutorial(sharedPrefs.getInt(getString(R.string.TutorialCompleteFlag), 0));
@@ -519,9 +515,10 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                 .setContentText("Click this button, or swipe from the left part of the screen to see high scores.")
                 .build();
         highScores.hideButton();
-        highScores.hide();
-        if (step == 5)
-        {
+        if (step != 5) {
+            highScores.hide();
+        }
+        else{
             highScores.show();
             thisref.findViewById(R.id.drawer_button).setOnClickListener(new View.OnClickListener() {
                 //Method for ending the high scores section
@@ -566,10 +563,10 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                 sharedPrefs.edit().putInt(getString(R.string.TutorialCompleteFlag), 5).commit();
             }
         });
-        yourScore.hide();
-        if (step == 4)
-        {
-            yourScore.show();
+        if (step != 4) {
+            yourScore.hide();
+        }
+        else {
             return;
         }
 
@@ -580,10 +577,10 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                 .setContentText("You can sweep to reveal enemy mines on the map. You can only sweep every " + SWEEP_COOLDOWN + " minutes.")
                 .build();
         sweep.hideButton();
-        sweep.hide();
-        if (step == 3)
-        {
-            sweep.show();
+        if (step != 3) {
+            sweep.hide();
+        }
+        else {
             thisref.findViewById(R.id.sweep_button).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -632,10 +629,11 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             @Override
             public void onShowcaseViewShow(ShowcaseView showcaseView) {}
         });
-        remove.hide();
-        if (step == 2)
-        {
-            remove.show();
+
+        if (step != 2) {
+            remove.hide();
+        }
+        else{
             //Function for ending step 2
             thisref.map.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
                 //Method for ending the remove section
@@ -661,6 +659,11 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                 .build();
         plant.hideButton();
         //Function for ending step 0
+        if (step != 1) {
+            plant.hide();
+        }
+
+        //We need to set the listener after the hide call
         plant.setOnShowcaseEventListener(new OnShowcaseEventListener() {
             @Override
             public void onShowcaseViewHide(ShowcaseView showcaseView) {
@@ -688,10 +691,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             @Override
             public void onShowcaseViewShow(ShowcaseView showcaseView) {}
         });
-        plant.hide();
-        if (step == 1)
-        {
-            plant.show();
+
+        if (step == 1) {
             thisref.map.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
                 //Method for ending the plant section
                 @Override

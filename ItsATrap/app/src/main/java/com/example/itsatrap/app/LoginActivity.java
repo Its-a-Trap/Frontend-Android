@@ -83,6 +83,10 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
                     .addScope(Plus.SCOPE_PLUS_LOGIN)
                     .build();
 //        }
+
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+        editor.putInt(getString(R.string.TutorialCompleteFlag), 0);
+        editor.commit();
     }
 
     protected void onStart() {
