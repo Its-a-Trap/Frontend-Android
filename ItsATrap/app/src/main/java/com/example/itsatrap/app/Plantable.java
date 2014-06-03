@@ -22,6 +22,8 @@ public class Plantable{
 //    //In meters
     private float radius;
 
+    private final float DEFAULT_RADIUS = 2;
+
     public Plantable(JSONObject plantable) throws JSONException {
         this.plantableId = plantable.getString("id");
         this.ownerId = plantable.getString("owner");
@@ -30,7 +32,7 @@ public class Plantable{
         this.location = new LatLng(location.getDouble("lat"), location.getDouble("lon"));
 
 
-        this.radius = 2;
+        this.radius = DEFAULT_RADIUS;
     }
 
     public Plantable(String plantableId, String ownerId, LatLng location, Date plantTime, long duration, float radius) {
@@ -39,7 +41,7 @@ public class Plantable{
         this.location = location;
 //        this.plantTime = plantTime;
 //        this.duration = duration;
-        this.radius = 2;
+        this.radius = DEFAULT_RADIUS;
 
         isActive = true;
     }

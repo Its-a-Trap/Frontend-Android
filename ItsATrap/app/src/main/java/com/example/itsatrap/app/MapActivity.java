@@ -194,11 +194,14 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         mapView = (MapView)findViewById(R.id.map_view);
         mapView.setMapActivity(this);
 
-        if (true || !sharedPrefs.contains(getString(R.string.TutorialCompleteFlag))){
-            showTutorial();
-            SharedPreferences.Editor editor = sharedPrefs.edit();
-            editor.putBoolean(getString(R.string.TutorialCompleteFlag), true);
-            editor.commit();
+//        SharedPreferences.Editor editor = sharedPrefs.edit();
+//        editor.putInt(getString(R.string.TutorialCompleteFlag), 0);
+//        editor.commit();
+
+        //There are 5 tutorial steps - step 6 means we're done
+        if (true || sharedPrefs.getInt(getString(R.string.TutorialCompleteFlag), 0) > 5){
+            showTutorial(sharedPrefs.getInt(getString(R.string.TutorialCompleteFlag), 0));
+
         }
 
         updateLocation(getCurLatLng());
@@ -502,8 +505,11 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
      * Runs the build in tutorial. Replaces the user data to something garuanteed to be useful, and
      * steps through a series of showcase views designed to lead the user through the major elements
      * of the game.
+     * As it goes through, it reassigns various listeners to progress the tutorial
+     * @param step - the step of the tutorial to start on
      */
-    public void showTutorial(){
+    public void showTutorial(int step){
+        //Step 5
         final GameController realController = gameController;
         gameController = new TutorialGameController(gameController.getUser(), (LocationManager) getSystemService(Context.LOCATION_SERVICE), this);
 
@@ -514,17 +520,37 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                 .build();
         highScores.hideButton();
         highScores.hide();
+        if (step == 5)
+        {
+            highScores.show();
+            thisref.findViewById(R.id.drawer_button).setOnClickListener(new View.OnClickListener() {
+                //Method for ending the high scores section
+                @Override
+                public void onClick(View view) {
+                    highScores.hide();
+                    thisref.findViewById(R.id.drawer_button).setOnClickListener(thisref);
+                    thisref.onClick(view);
+                    thisref.gameController = realController;
+                    lastSweeped = null;
+                    sharedPrefs.edit().putInt(getString(R.string.TutorialCompleteFlag), 6).commit();
+                }
+            });
+            return;
+        }
 
+        //Step 4
         final ShowcaseView yourScore = new ShowcaseView.Builder(this)
                 .setTarget(new ViewTarget(R.id.your_score, this))
                 .setContentTitle("Your Score")
                 .setContentText("You can see your score at the top of the screen.")
                 .build();
+        //Method for ending step 4
         yourScore.overrideButtonClick(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 yourScore.hide();
                 highScores.show();
+                //Method for ending step 5
                 thisref.findViewById(R.id.drawer_button).setOnClickListener(new View.OnClickListener() {
                     //Method for ending the high scores section
                     @Override
@@ -534,12 +560,20 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                         thisref.onClick(view);
                         thisref.gameController = realController;
                         lastSweeped = null;
+                        sharedPrefs.edit().putInt(getString(R.string.TutorialCompleteFlag), 6).commit();
                     }
                 });
+                sharedPrefs.edit().putInt(getString(R.string.TutorialCompleteFlag), 5).commit();
             }
         });
         yourScore.hide();
+        if (step == 4)
+        {
+            yourScore.show();
+            return;
+        }
 
+        //Step 3
         final ShowcaseView sweep = new ShowcaseView.Builder(this)
                 .setTarget(new ViewTarget(R.id.sweep_button, this))
                 .setContentTitle("Sweep")
@@ -547,6 +581,21 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                 .build();
         sweep.hideButton();
         sweep.hide();
+        if (step == 3)
+        {
+            sweep.show();
+            thisref.findViewById(R.id.sweep_button).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    sweep.hide();
+                    yourScore.show();
+                    thisref.findViewById(R.id.sweep_button).setOnClickListener(thisref);
+                    thisref.sweep(view);
+                    sharedPrefs.edit().putInt(getString(R.string.TutorialCompleteFlag), 4).commit();
+                }
+            });
+            return;
+        }
 
         //The point to place and remove mines
         Display display = getWindowManager().getDefaultDisplay();
@@ -554,6 +603,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         display.getSize(tapPoint);
         tapPoint.set(tapPoint.x*2/3, tapPoint.y*2/3);
 
+        //Step 2
         final ShowcaseView remove = new ShowcaseView.Builder(this)
                 .setTarget(new PointTarget(tapPoint))
                 .setContentTitle("Remove a Mine")
@@ -561,7 +611,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                 .build();
         remove.hideButton();
         remove.setOnShowcaseEventListener(new OnShowcaseEventListener() {
-            //Method for ending the sweep section
+            //Method for ending the sweep section (step 3)
             @Override
             public void onShowcaseViewHide(ShowcaseView showcaseView) {
                 thisref.findViewById(R.id.sweep_button).setOnClickListener(new View.OnClickListener() {
@@ -571,6 +621,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                         yourScore.show();
                         thisref.findViewById(R.id.sweep_button).setOnClickListener(thisref);
                         thisref.sweep(view);
+                        sharedPrefs.edit().putInt(getString(R.string.TutorialCompleteFlag), 4).commit();
                     }
                 });
             }
@@ -582,16 +633,38 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             public void onShowcaseViewShow(ShowcaseView showcaseView) {}
         });
         remove.hide();
+        if (step == 2)
+        {
+            remove.show();
+            //Function for ending step 2
+            thisref.map.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+                //Method for ending the remove section
+                @Override
+                public void onInfoWindowClick(Marker marker) {
+                    if (plantableToPlace == null || (plantableToPlace != null && !marker.getPosition().equals(plantableToPlace.getPosition()))){
+                        remove.hide();
+                        sweep.show();
+                        thisref.map.setOnInfoWindowClickListener(thisref);
+                    }
+                    sharedPrefs.edit().putInt(getString(R.string.TutorialCompleteFlag), 3).commit();
+                    thisref.onInfoWindowClick(marker);
+                }
+            });
+            return;
+        }
 
+        //Step 1
         final ShowcaseView plant = new ShowcaseView.Builder(this)
                 .setTarget(new PointTarget(tapPoint))
                 .setContentTitle("Plant a Trap")
                 .setContentText("Tap on the map and tap again to confirm to place a trap.")
                 .build();
         plant.hideButton();
+        //Function for ending step 0
         plant.setOnShowcaseEventListener(new OnShowcaseEventListener() {
             @Override
             public void onShowcaseViewHide(ShowcaseView showcaseView) {
+                //Function for ending step 2
                 thisref.map.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
                     //Method for ending the remove section
                     @Override
@@ -603,8 +676,10 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                         }
 
                         thisref.onInfoWindowClick(marker);
+                        sharedPrefs.edit().putInt(getString(R.string.TutorialCompleteFlag), 3).commit();
                     }
                 });
+                sharedPrefs.edit().putInt(getString(R.string.TutorialCompleteFlag), 2).commit();
             }
 
             @Override
@@ -614,17 +689,35 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             public void onShowcaseViewShow(ShowcaseView showcaseView) {}
         });
         plant.hide();
+        if (step == 1)
+        {
+            plant.show();
+            thisref.map.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+                //Method for ending the plant section
+                @Override
+                public void onInfoWindowClick(Marker marker) {
+                    plant.hide();
+                    remove.show();
+                    thisref.onInfoWindowClick(marker);
+                    sharedPrefs.edit().putInt(getString(R.string.TutorialCompleteFlag), 2).commit();
+                }
+            });
+            return;
+        }
 
+        //Step 0
         final ShowcaseView welcome = new ShowcaseView.Builder(this)
                 .setContentTitle("Welcome")
                 .setContentText("It's a trap is a game of cunning and \ndeception. Earn points by placing traps \nwhere other people will walk over them, \nand avoid getting trapped yourself.")
                 .build();
+        //Function for ending step -
         welcome.overrideButtonClick(new View.OnClickListener() {
             //Method for ending the welcome section
             @Override
             public void onClick(View view) {
                 welcome.hide();
                 plant.show();
+                //Function for ending step 1
                 thisref.map.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
                     //Method for ending the plant section
                     @Override
@@ -632,8 +725,10 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                         plant.hide();
                         remove.show();
                         thisref.onInfoWindowClick(marker);
+                        sharedPrefs.edit().putInt(getString(R.string.TutorialCompleteFlag), 2).commit();
                     }
                 });
+                sharedPrefs.edit().putInt(getString(R.string.TutorialCompleteFlag), 1).commit();
             }
         });
     }
