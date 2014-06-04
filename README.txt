@@ -13,3 +13,5 @@ The core functionality of the app is in place, but some elements remain unimplem
 - We have not fine-tuned the location update frequency. Currently we perform updates whenever the phone senses it moves 1m at a maximum rate of once per second. This is much higher than recommended levels and seems to drain phone batteries extremely rapidly.
 
 - We intended to implement a different place and replace gesture. Instead of a two-tap system we wanted a long-press gesture during which the trap would inflate to full size while the user pressed. This was scrapped due to complexity.
+
+The app should run without any particular effort on your part. However, you will need to run it on an actual device as the google maps api will not work under an emulator.
