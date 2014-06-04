@@ -30,8 +30,7 @@ import java.io.IOException;
  * Sample code drawn from https://developers.google.com/+/mobile/android/getting-started
  * and https://developers.google.com/+/mobile/android/sign-in
  */
-public class LoginActivity extends Activity implements OnConnectionFailedListener, ConnectionCallbacks, View.OnClickListener
-{
+public class LoginActivity extends Activity implements OnConnectionFailedListener, ConnectionCallbacks, View.OnClickListener{
 
 
     private GoogleApiClient gClient;
@@ -60,20 +59,19 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
         context = getApplicationContext();
 
         sharedPrefs = getSharedPreferences(getString(R.string.SharedPrefName), 0);
-//        if (sharedPrefs.contains(getString(R.string.PrefsEmailString)))
-//        {
-//            signInCompleted(sharedPrefs.getString(getString(R.string.PrefsEmailString), ""));
-//        }
-//        else
-//        {
+        if (sharedPrefs.contains(getString(R.string.PrefsEmailString)))
+        {
+            signInCompleted(sharedPrefs.getString(getString(R.string.PrefsEmailString), ""), sharedPrefs.getString(getString(R.string.PrefsNameString), ""));
+        }
+        else
+        {
             //Set Google login button onclick
             findViewById(R.id.google_sign_in_button).setOnClickListener(this);
 
@@ -84,27 +82,24 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
                     .addApi(Plus.API, null)
                     .addScope(Plus.SCOPE_PLUS_LOGIN)
                     .build();
-//        }
+        }
+
     }
 
-    protected void onStart()
-    {
+    protected void onStart() {
         super.onStart();
 
-        if (gClient != null)
-        {
+        if (gClient != null) {
             //Initialize connection to Google server
 
         }
     }
 
-    protected void onStop()
-    {
+    protected void onStop() {
         super.onStop();
 
 
-        if (gClient != null && gClient.isConnected())
-        {
+        if (gClient != null && gClient.isConnected()) {
             gClient.disconnect();
         }
     }
@@ -139,8 +134,7 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
      * Method to be called once some sort of sign in has been completed. Sets the username and moves to the next screen
      * @param email
      */
-    protected void signInCompleted(String email, String name)
-    {
+    protected void signInCompleted(String email, String name){
         //Save current user information
         final SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putString(getString(R.string.PrefsEmailString), email);
@@ -196,8 +190,7 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
             }
         }
 
-        class GetIdTask extends PostJsonTask<String>
-        {
+        class GetIdTask extends PostJsonTask<String> {
 
             public GetIdTask(String serverAddress, String endpoint) {
                 super(serverAddress, endpoint);
@@ -210,8 +203,7 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
             }
 
             @Override
-            protected void onPostExecute(String id)
-            {
+            protected void onPostExecute(String id) {
                 editor.putString(getString(R.string.PrefsIdString), id);
                 editor.commit();
 
@@ -223,8 +215,7 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
     }
 
     @Override
-    public void onConnected(Bundle bundle)
-    {
+    public void onConnected(Bundle bundle){
 
         String email = Plus.AccountApi.getAccountName(gClient);
         String name = Plus.PeopleApi.getCurrentPerson(gClient).getDisplayName();
@@ -234,13 +225,11 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
     }
 
     @Override
-    public void onConnectionSuspended(int i)
-    {
+    public void onConnectionSuspended(int i) {
 
     }
 
-    public void onActivityResult(int requestCode, int responseCode, Intent intent)
-    {
+    public void onActivityResult(int requestCode, int responseCode, Intent intent) {
         if (requestCode == RC_SIGN_IN) {
 
             mIntentInProgress = false;
@@ -253,8 +242,7 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
 
 
         @Override
-    public void onConnectionFailed(ConnectionResult result)
-        {
+    public void onConnectionFailed(ConnectionResult result) {
         if (!mIntentInProgress) {
             // Store the ConnectionResult so that we can use it later when the user clicks
             // 'sign-in'.
@@ -265,8 +253,7 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
     }
 
     /* A helper method to resolve the current ConnectionResult error. */
-    private void resolveSignInError()
-    {
+    private void resolveSignInError() {
         if (mConnectionResult.hasResolution()) {
             try {
                 mIntentInProgress = true;
@@ -281,10 +268,8 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
     }
 
     @Override
-    public void onClick(View view)
-    {
-        if (view.getId() == R.id.google_sign_in_button)
-        {
+    public void onClick(View view) {
+        if (view.getId() == R.id.google_sign_in_button) {
             login_google(view);
         }
     }

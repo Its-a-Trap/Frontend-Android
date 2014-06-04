@@ -14,33 +14,28 @@ import java.util.List;
 /**
  * Created by maegereg on 5/10/14.
  */
-public class ScoreArrayAdapter extends ArrayAdapter<PlayerInfo>
-{
+public class ScoreArrayAdapter extends ArrayAdapter<PlayerInfo>{
 
     private int resource;
     private Context context;
     private List<PlayerInfo> objects;
 
-    public ScoreArrayAdapter(Context context, int resource, List<PlayerInfo> objects)
-    {
+    public ScoreArrayAdapter(Context context, int resource, List<PlayerInfo> objects) {
         super(context, resource, objects);
         this.context = context;
         this.resource = resource;
         this.objects = objects;
     }
 
-    public View getView(int position, View convertView, ViewGroup parent)
-    {
+    public View getView(int position, View convertView, ViewGroup parent){
         View row = convertView;
 
-        if (row == null)
-        {
+        if (row == null){
             LayoutInflater inflater = ((Activity)context).getLayoutInflater();
             row = inflater.inflate(resource, parent, false);
         }
 
-        synchronized (objects)
-        {
+        synchronized (objects){
             ((TextView) row.findViewById(R.id.drawer_name_text)).setText(position + ". " + objects.get(position).getName());
             ((TextView) row.findViewById(R.id.drawer_score_text)).setText(Integer.toString(objects.get(position).getScore()));
         }

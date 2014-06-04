@@ -37,8 +37,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * Created by maegereg on 5/10/14.
  */
-public class GameController
-{
+public class GameController{
 
 
 
@@ -47,22 +46,14 @@ public class GameController
     protected final List<Plantable> enemyPlantables = new ArrayList<Plantable>();
     protected final List<PlayerInfo> highScores = new ArrayList<PlayerInfo>();
 
-    private LatLng lastRegisteredLocation;
-
     //We need a reference back to the mapActivity so the async tasks can call methods on it
     //TODO: refactor so that the mapactivity handles network connections
     private MapActivity mapActivity;
 
     private int maxPlantables = 12;
 
-    public GameController(User curUser, LocationManager locManager, MapActivity mapActivity)
-
-    {
+    public GameController(User curUser){
         this.curUser = curUser;
-        this.mapActivity = mapActivity;
-
-        Location curLocation = locManager.getLastKnownLocation(locManager.getBestProvider(new Criteria(), true));
-        LatLng curLoc = new LatLng(curLocation.getLatitude(), curLocation.getLongitude());
     }
 
     public List<PlayerInfo> getHighScores()
@@ -79,10 +70,8 @@ public class GameController
 
     public User getUser() { return curUser; }
 
-    public void removeEnemyPlantable(Plantable toRemove)
-    {
-        synchronized (enemyPlantables)
-        {
+    public void removeEnemyPlantable(Plantable toRemove){
+        synchronized (enemyPlantables){
             enemyPlantables.remove(toRemove);
         }
     }
@@ -90,16 +79,12 @@ public class GameController
     /*
         Returns a list of all enemy plantables within their radius of the provided location - used for detecting explosions
      */
-    public List<Plantable> checkForCollisions(LatLng currentLocation)
-    {
-        synchronized (enemyPlantables)
-        {
+    public List<Plantable> checkForCollisions(LatLng currentLocation){
+        synchronized (enemyPlantables){
             List<Plantable> results = new ArrayList<Plantable>();
-            for (int i = 0; i<enemyPlantables.size(); ++i)
-            {
+            for (int i = 0; i<enemyPlantables.size(); ++i){
                 LatLng otherLocation = enemyPlantables.get(i).getLocation();
-                if (distanceBetween(currentLocation, otherLocation) < enemyPlantables.get(i).getRadius())
-                {
+                if (distanceBetween(currentLocation, otherLocation) < enemyPlantables.get(i).getRadius()){
                     results.add(enemyPlantables.get(i));
                 }
             }
@@ -110,17 +95,13 @@ public class GameController
     /*
         Returns a list of all enemy plantables within the given radius of the given location - used for sweeping
      */
-    public List<Plantable> getEnemyPlantablesWithinRadius(LatLng currentLocation, float radius)
-    {
-        synchronized (enemyPlantables)
-        {
+    public List<Plantable> getEnemyPlantablesWithinRadius(LatLng currentLocation, float radius){
+        synchronized (enemyPlantables){
             List<Plantable> results = new ArrayList<Plantable>();
-            for (int i = 0; i<enemyPlantables.size(); ++i)
-            {
+            for (int i = 0; i<enemyPlantables.size(); ++i){
                 LatLng otherLocation = enemyPlantables.get(i).getLocation();
 
-                if (distanceBetween(currentLocation, otherLocation) < radius)
-                {
+                if (distanceBetween(currentLocation, otherLocation) < radius){
                     results.add(enemyPlantables.get(i));
                 }
             }
@@ -129,41 +110,32 @@ public class GameController
     }
 
     //Stub
-    public int getNumUserPlantablesLeft()
-    {
-        synchronized (userPlantables)
-        {
+    public int getNumUserPlantablesLeft(){
+        synchronized (userPlantables) {
             return maxPlantables - userPlantables.size();
         }
     }
 
-    public int getNumUserPlantablesUsed()
-    {
-        synchronized (userPlantables)
-        {
+    public int getNumUserPlantablesUsed(){
+        synchronized (userPlantables) {
             return userPlantables.size();
         }
     }
 
-    public void addUserPlantable(Plantable toAdd)
-    {
-        synchronized (userPlantables)
-        {
+    public void addUserPlantable(Plantable toAdd) {
+        synchronized (userPlantables) {
             userPlantables.add(toAdd);
         }
     }
 
     //Stub
-    public void removeUserPlantable(Plantable toRemove)
-    {
-        synchronized (userPlantables)
-        {
+    public void removeUserPlantable(Plantable toRemove){
+        synchronized (userPlantables){
             userPlantables.remove(toRemove);
         }
     }
 
-    public static float distanceBetween(LatLng firstLoc, LatLng secondLoc)
-    {
+    public static float distanceBetween(LatLng firstLoc, LatLng secondLoc) {
         float[] distance = new float[1];
         Location.distanceBetween(firstLoc.latitude, firstLoc.longitude, secondLoc.latitude, secondLoc.longitude, distance);
         return distance[0];

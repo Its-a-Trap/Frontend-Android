@@ -15,8 +15,8 @@ import java.util.List;
  */
 public class TutorialGameController extends GameController {
 
-    public TutorialGameController(User curUser, LocationManager locManager, MapActivity mapActivity) {
-        super(curUser, locManager, mapActivity);
+    public TutorialGameController(User curUser) {
+        super(curUser);
     }
 
     /**
@@ -31,8 +31,7 @@ public class TutorialGameController extends GameController {
     @Override
     public List<Plantable> getEnemyPlantablesWithinRadius(LatLng currentLocation, float radius) {
         List<Plantable> toReturn = super.getEnemyPlantablesWithinRadius(currentLocation, radius);
-        if (toReturn.size() == 0)
-        {
+        if (toReturn.size() == 0) {
             toReturn.add(new Plantable("", "", new LatLng(currentLocation.latitude+.001, currentLocation.longitude+.001), new Date(), 1000, 10));
             toReturn.add(new Plantable("", "", new LatLng(currentLocation.latitude-.001, currentLocation.longitude-.001), new Date(), 1000, 10));
         }
