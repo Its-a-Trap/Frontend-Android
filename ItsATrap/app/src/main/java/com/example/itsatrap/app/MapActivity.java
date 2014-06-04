@@ -258,8 +258,12 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     @Override
     public void onResume() {
         super.onResume();
+        Log.d(TAG, "Resuming.");
+        Log.d(TAG, "Starting service.");
         startService(intent);
+        Log.d(TAG, "Registering receiver.");
         registerReceiver(broadcastReceiver, new IntentFilter(GcmIntentService.BROADCAST_ACTION));
+        Log.d(TAG, "Done resuming.");
     }
 
     @Override

@@ -45,7 +45,7 @@ public class GcmIntentService extends IntentService {
     public GcmIntentService() {
         super("GcmIntentService");
     }
-    public static final String TAG = "GCM Demo";
+    public static final String TAG = "IATGcmIntentService";
 
     public static final String BROADCAST_ACTION = "com.example.itsatrap.app.receivepush";
     private final Handler handler = new Handler();
@@ -84,6 +84,7 @@ public class GcmIntentService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        Log.d(TAG, "handling intent.");
         intent.setAction(BROADCAST_ACTION);
         sendBroadcast(intent);
 //        Bundle extras = intent.getExtras();
