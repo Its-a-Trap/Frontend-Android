@@ -4,9 +4,6 @@ TO DO:
 - Kill you when you close the app
 
 
-EASY QUICK:
-- Change sweep radius
-
 
 LOW PRIORITY:
 - Gamification / Graphic qualities
