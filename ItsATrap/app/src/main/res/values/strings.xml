@@ -12,7 +12,36 @@
     <string name="watchOut">Watch out!</string>
     <string name="PrefsIdString">UserId</string>
     <string name="PrefsNameString">UserName</string>
-    <string name="TutorialCompleteFlag">TutorialStage</string>
+    <string name="TutorialCompleteFlag">TutorialStage</string><string name="introduction_text">It\'s a trap is a game of cunning and
+deception. Earn points by placing traps
+where other people will walk over them,
+and avoid getting trapped yourself.</string>
+    <string name="introduction_title">Welcome</string>
+    <string name="cant_sweep_1">Can\'t sweep again for </string>
+    <string name="cant_sweep_2"> minutes.</string>
+    <string name="removemine_error">Problem with server, trap wasn\'t removed</string>
+    <string name="addmine_error">Problem with server, trap wasn\'t placed</string><string name="traps_placed">
+traps placed</string><string name="traps_left">
+traps left</string>
+    <string name="no_traps_left">No traps left</string>
+    <string name="trapped_message_1">You have been trapped </string>
+    <string name="trapped_message_2"> times by </string>
+    <string name="trapped_message_3">. You lost </string>
+    <string name="trapped_message_4"> points.</string>
+    <string name="trapped_title">You\'ve been trapped!</string>
+    <string name="trapped_short_message_1">You have been trapped </string>
+    <string name="trapped_short_message_2"> times.</string>
+    <string name="high_scores_title">High Scores</string>
+    <string name="high_scores_text">Click this button, or swipe from the left part of the screen to see high scores.</string>
+    <string name="your_score_title">Your Score</string>
+    <string name="your_score_text">You can see your score at the top of the screen.</string>
+    <string name="sweep_title">Sweep</string>
+    <string name="sweep_text_1">You can sweep to reveal enemy mines on the map. You can only sweep every </string>
+    <string name="sweep_text_2"> minutes.</string>
+    <string name="removemine_title">Remove a Mine</string>
+    <string name="removemine_text">Tap a trap and confirm to remove it.</string>
+    <string name="plant_title">Plant a Trap</string>
+    <string name="plant_text">Tap on the map and tap again to confirm to place a trap.</string>
 
 
 </resources>

@@ -226,12 +226,12 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                 ((Vibrator)getSystemService(VIBRATOR_SERVICE)).vibrate(20);
                 if (trapsLeftToggle){
                     ((TextView) findViewById(R.id.your_plantable_count))
-                            .setText(String.valueOf(gameController.getNumUserPlantablesUsed()) + "\ntraps placed");
+                            .setText(String.valueOf(gameController.getNumUserPlantablesUsed()) + getString(R.string.traps_placed));
                     trapsLeftToggle = false;
                 }
                 else{
                     ((TextView) findViewById(R.id.your_plantable_count))
-                            .setText(String.valueOf(gameController.getNumUserPlantablesLeft())+"\ntraps left");
+                            .setText(String.valueOf(gameController.getNumUserPlantablesLeft())+getString(R.string.traps_left));
                     trapsLeftToggle = true;
                 }
             }
@@ -299,7 +299,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     public void onMapClick(LatLng latLng){
         // If you're out of plantable items, don't let them do it
         if (gameController.getNumUserPlantablesLeft() <= 0){
-            Toast.makeText(this, "No traps left", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.no_traps_left), Toast.LENGTH_SHORT).show();
         }
         else{
             if (removingPlantable){
@@ -323,10 +323,10 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     private void updatePlantableCount(){
         if (trapsLeftToggle) {
             ((TextView) findViewById(R.id.your_plantable_count))
-                    .setText(String.valueOf(gameController.getNumUserPlantablesLeft()) + "\ntraps left");
+                    .setText(String.valueOf(gameController.getNumUserPlantablesLeft()) + getString(R.string.traps_left));
         } else {
             ((TextView) findViewById(R.id.your_plantable_count))
-                    .setText(String.valueOf(gameController.getNumUserPlantablesUsed()) + "\ntraps placed");
+                    .setText(String.valueOf(gameController.getNumUserPlantablesUsed()) + getString(R.string.traps_placed));
         }
     }
 
@@ -478,8 +478,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         //Set up the notification
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.its_a_trap_icon)
-                .setContentTitle("You've been trapped!")
-                .setContentText("You have been trapped "+deathCount+" times.");
+                .setContentTitle(getString(R.string.trapped_title))
+                .setContentText(getString(R.string.trapped_short_message_1)+deathCount+getString(R.string.trapped_short_message_2));
 
         //Set up the notification to take the user to this app on click
         Intent resultIntent = new Intent(this, MapActivity.class);
@@ -491,7 +491,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
         //Set up expanded version of notification with full explanation
         NotificationCompat.BigTextStyle bigStyle = new NotificationCompat.BigTextStyle();
-        bigStyle.bigText("You have been trapped " + deathCount + " times by " + killersList.toString() + ". You lost " + 50 * deathCount + " points.");
+        bigStyle.bigText(getString(R.string.trapped_message_1) + deathCount + getString(R.string.trapped_message_2) + killersList.toString() + getString(R.string.trapped_message_3) + 50 * deathCount + getString(R.string.trapped_message_4));
         mBuilder.setStyle(bigStyle);
 
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -513,8 +513,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
         final ShowcaseView highScores = new ShowcaseView.Builder(this)
                 .setTarget(new ViewTarget(R.id.drawer_button, this))
-                .setContentTitle("High Scores")
-                .setContentText("Click this button, or swipe from the left part of the screen to see high scores.")
+                .setContentTitle(getString(R.string.high_scores_title))
+                .setContentText(getString(R.string.high_scores_text))
                 .build();
         highScores.hideButton();
         if (step != 5) {
@@ -540,8 +540,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         //Step 4
         final ShowcaseView yourScore = new ShowcaseView.Builder(this)
                 .setTarget(new ViewTarget(R.id.your_score, this))
-                .setContentTitle("Your Score")
-                .setContentText("You can see your score at the top of the screen.")
+                .setContentTitle(getString(R.string.your_score_title))
+                .setContentText(getString(R.string.your_score_text))
                 .build();
         //Method for ending step 4
         yourScore.overrideButtonClick(new View.OnClickListener() {
@@ -575,8 +575,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         //Step 3
         final ShowcaseView sweep = new ShowcaseView.Builder(this)
                 .setTarget(new ViewTarget(R.id.sweep_button, this))
-                .setContentTitle("Sweep")
-                .setContentText("You can sweep to reveal enemy mines on the map. You can only sweep every " + SWEEP_COOLDOWN + " minutes.")
+                .setContentTitle(getString(R.string.sweep_title))
+                .setContentText(getString(R.string.sweep_text_1) + SWEEP_COOLDOWN + getString(R.string.sweep_text_2))
                 .build();
         sweep.hideButton();
         if (step != 3) {
@@ -605,8 +605,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         //Step 2
         final ShowcaseView remove = new ShowcaseView.Builder(this)
                 .setTarget(new PointTarget(tapPoint))
-                .setContentTitle("Remove a Mine")
-                .setContentText("Tap a trap and confirm to remove it.")
+                .setContentTitle(getString(R.string.removemine_title))
+                .setContentText(getString(R.string.removemine_text))
                 .build();
         remove.hideButton();
         remove.setOnShowcaseEventListener(new OnShowcaseEventListener() {
@@ -656,8 +656,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         //Step 1
         final ShowcaseView plant = new ShowcaseView.Builder(this)
                 .setTarget(new PointTarget(tapPoint))
-                .setContentTitle("Plant a Trap")
-                .setContentText("Tap on the map and tap again to confirm to place a trap.")
+                .setContentTitle(getString(R.string.plant_title))
+                .setContentText(getString(R.string.plant_text))
                 .build();
         plant.hideButton();
         //Function for ending step 0
@@ -710,8 +710,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
         //Step 0
         final ShowcaseView welcome = new ShowcaseView.Builder(this)
-                .setContentTitle("Welcome")
-                .setContentText("It's a trap is a game of cunning and \ndeception. Earn points by placing traps \nwhere other people will walk over them, \nand avoid getting trapped yourself.")
+                .setContentTitle(getString(R.string.introduction_title))
+                .setContentText(getString(R.string.introduction_text))
                 .build();
         //Function for ending step -
         welcome.overrideButtonClick(new View.OnClickListener() {
@@ -753,7 +753,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         if (lastSweeped != null && new Date().getTime() - lastSweeped.getTime() < 1000*60*SWEEP_COOLDOWN){
 
             long minutesLeft = (SWEEP_COOLDOWN*60*1000 - (new Date().getTime() - lastSweeped.getTime()))/1000/60 + 1;
-            Toast.makeText(this, "Can't sweep again for "+minutesLeft+" minutes.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.cant_sweep_1)+minutesLeft+getString(R.string.cant_sweep_2), Toast.LENGTH_SHORT).show();
             return false;
         }
 
@@ -990,7 +990,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
                 }
                 else {
                     //If we failed to add, and there's no pending plantable re-make this one pending
-                    Toast.makeText(self, "Problem with server, trap wasn't placed", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(self, getString(R.string.addmine_error), Toast.LENGTH_SHORT).show();
 
                     if (plantableToPlace == null) {
                         marker.setAlpha((float) 0.5);
@@ -1053,7 +1053,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             protected void onPostExecute(Boolean success) {
                 //If we didn't succeed, we need to put it back on the map because it's not gone
                 if (!success) {
-                    Toast.makeText(self, "Problem with server, trap wasn't removed", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(self, getString(R.string.removemine_error), Toast.LENGTH_SHORT).show();
                     markerData.put(map.addMarker(new MarkerOptions()
                             .position(toRemove.getLocation())
                             .title(getString(R.string.yourTrap))
