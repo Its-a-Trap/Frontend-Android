@@ -112,7 +112,9 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG + "PUSH message", intent.getExtras().getString("message"));
-            updateLocation(getCurLatLng());
+            LatLng curLoc = getCurLatLng();
+            if (curLoc != null)
+                updateLocation(curLoc);
             Log.d(TAG + "PUSH", "Received push notification!!");
         }
     };
@@ -148,7 +150,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
         //Create the game controller object
         if (gameController == null)
-            gameController = new GameController(new User(sharedPrefs.getString(getString(R.string.PrefsEmailString), ""), sharedPrefs.getString(getString(R.string.PrefsIdString), ""), sharedPrefs.getString(getString(R.string.PrefsNameString), "")), (LocationManager) getSystemService(Context.LOCATION_SERVICE), this);
+            gameController = new GameController(new User(sharedPrefs.getString(getString(R.string.PrefsEmailString), ""), sharedPrefs.getString(getString(R.string.PrefsIdString), ""), sharedPrefs.getString(getString(R.string.PrefsNameString), "")));
 
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawerList = (ListView) findViewById(R.id.left_drawer);
@@ -176,7 +178,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             LatLng curLoc = getCurLatLng();
 
             map.setMyLocationEnabled(true);
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(curLoc, 13));
+            if (curLoc != null)
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(curLoc, 13));
 
             //Set the listener
             map.setOnMapClickListener(this);
@@ -201,7 +204,9 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
         }
 
-        updateLocation(getCurLatLng());
+        LatLng curLoc = getCurLatLng();
+        if (curLoc != null)
+            updateLocation(curLoc);
 
         drawerLayout.setDrawerListener(new DrawerLayout.DrawerListener(){
             @Override
@@ -509,7 +514,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         //Step 5
         final GameController realController = gameController;
         if (! (gameController instanceof TutorialGameController))
-            gameController = new TutorialGameController(gameController.getUser(), (LocationManager) getSystemService(Context.LOCATION_SERVICE), this);
+            gameController = new TutorialGameController(gameController.getUser());
 
         final ShowcaseView highScores = new ShowcaseView.Builder(this)
                 .setTarget(new ViewTarget(R.id.drawer_button, this))
@@ -758,13 +763,16 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         }
 
         //Get nearby enemy mines, and add markers to the map
-        List<Plantable> enemyTraps = gameController.getEnemyPlantablesWithinRadius(getCurLatLng(), SWEEP_RADIUS);
-        for (Plantable plantable : enemyTraps) {
-            Marker marker = map.addMarker(new MarkerOptions()
-                    .position(plantable.getLocation())
-                    .title(getString(R.string.watchOut))
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
-            sweepMinesVisible.add(marker);
+        LatLng curLoc = getCurLatLng();
+        if (curLoc != null) {
+            List<Plantable> enemyTraps = gameController.getEnemyPlantablesWithinRadius(curLoc, SWEEP_RADIUS);
+            for (Plantable plantable : enemyTraps) {
+                Marker marker = map.addMarker(new MarkerOptions()
+                        .position(plantable.getLocation())
+                        .title(getString(R.string.watchOut))
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+                sweepMinesVisible.add(marker);
+            }
         }
 
         //Record when we last sweeped to prevent excessive sweeping
@@ -1076,9 +1084,15 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     ---------------- Helper methods
      */
 
+    /**
+     * Gets the current location, or null if location service is disabled
+     * @return
+     */
     private LatLng getCurLatLng() {
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         Location curLocation = locationManager.getLastKnownLocation(locationManager.getBestProvider(new Criteria(), true));
+        if (curLocation == null)
+            return null;
         LatLng curLoc = new LatLng(curLocation.getLatitude(), curLocation.getLongitude());
         return curLoc;
     }

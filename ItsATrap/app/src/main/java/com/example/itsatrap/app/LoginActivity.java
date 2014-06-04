@@ -66,12 +66,12 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
         context = getApplicationContext();
 
         sharedPrefs = getSharedPreferences(getString(R.string.SharedPrefName), 0);
-//        if (sharedPrefs.contains(getString(R.string.PrefsEmailString)))
-//        {
-//            signInCompleted(sharedPrefs.getString(getString(R.string.PrefsEmailString), ""));
-//        }
-//        else
-//        {
+        if (sharedPrefs.contains(getString(R.string.PrefsEmailString)))
+        {
+            signInCompleted(sharedPrefs.getString(getString(R.string.PrefsEmailString), ""), sharedPrefs.getString(getString(R.string.PrefsNameString), ""));
+        }
+        else
+        {
             //Set Google login button onclick
             findViewById(R.id.google_sign_in_button).setOnClickListener(this);
 
@@ -82,11 +82,8 @@ public class LoginActivity extends Activity implements OnConnectionFailedListene
                     .addApi(Plus.API, null)
                     .addScope(Plus.SCOPE_PLUS_LOGIN)
                     .build();
-//        }
+        }
 
-        SharedPreferences.Editor editor = sharedPrefs.edit();
-        editor.putInt(getString(R.string.TutorialCompleteFlag), 0);
-        editor.commit();
     }
 
     protected void onStart() {

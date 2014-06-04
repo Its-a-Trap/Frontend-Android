@@ -46,20 +46,14 @@ public class GameController{
     protected final List<Plantable> enemyPlantables = new ArrayList<Plantable>();
     protected final List<PlayerInfo> highScores = new ArrayList<PlayerInfo>();
 
-    private LatLng lastRegisteredLocation;
-
     //We need a reference back to the mapActivity so the async tasks can call methods on it
     //TODO: refactor so that the mapactivity handles network connections
     private MapActivity mapActivity;
 
     private int maxPlantables = 12;
 
-    public GameController(User curUser, LocationManager locManager, MapActivity mapActivity){
+    public GameController(User curUser){
         this.curUser = curUser;
-        this.mapActivity = mapActivity;
-
-        Location curLocation = locManager.getLastKnownLocation(locManager.getBestProvider(new Criteria(), true));
-        LatLng curLoc = new LatLng(curLocation.getLatitude(), curLocation.getLongitude());
     }
 
     public List<PlayerInfo> getHighScores()

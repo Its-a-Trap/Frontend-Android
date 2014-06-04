@@ -15,8 +15,8 @@ import java.util.List;
  */
 public class TutorialGameController extends GameController {
 
-    public TutorialGameController(User curUser, LocationManager locManager, MapActivity mapActivity) {
-        super(curUser, locManager, mapActivity);
+    public TutorialGameController(User curUser) {
+        super(curUser);
     }
 
     /**
