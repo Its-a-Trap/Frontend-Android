@@ -93,7 +93,7 @@ public class GcmIntentService extends IntentService {
 //        otherIntent.setAction(BROADCAST_ACTION);
 //        otherIntent.setComponent(comp);
 //        Log.d(TAG, "intent action: " + otherIntent.getAction());
-        Log.d(TAG, "intent to string: " + otherIntent.toString());
+        Log.d(TAG, "other intent to string: " + otherIntent.toString());
 
         Bundle otherBundle = otherIntent.getExtras();
 

@@ -133,7 +133,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
             } catch (NullPointerException e) {
 
             }
-
+            Log.d(TAG + "PUSH", "================== DONE WITH REQUEST ==================");
         }
     };
 
