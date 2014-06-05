@@ -108,14 +108,29 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
 
     private Intent intent;
+    public static String PACKAGE_NAME;
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d(TAG + "PUSH message", intent.getExtras().getString("message"));
-            LatLng curLoc = getCurLatLng();
-            if (curLoc != null)
-                updateLocation(curLoc);
-            Log.d(TAG + "PUSH", "Received push notification!!");
+            Log.d(TAG, "PUSH message received");
+            try {
+                Log.d(TAG + "PUSH message", intent.getExtras().getString("message"));
+
+                // Do stuff if we need to refresh data
+                if (intent.getExtras().getString("message").equals("refreshdata")){
+                    LatLng curLoc = getCurLatLng();
+                    if (curLoc != null)
+                        updateLocation(curLoc);
+                } else if (intent.getExtras().getString("message").equals("killed")){ // Tell someone they were killed by someone
+                    String killed = intent.getExtras().getString("killed");
+                    displayTrappedSomeone(killed);
+                }
+
+                Log.d(TAG + "PUSH", "Received push notification!!");
+            } catch (NullPointerException e) {
+
+            }
+
         }
     };
 
@@ -130,6 +145,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
         // Setup Push
         intent = new Intent(this, GcmIntentService.class);
+        PACKAGE_NAME = getApplicationContext().getPackageName();
 
         //Initialize internal state information
         sweepMinesVisible = new ArrayList<Marker>();
@@ -259,15 +275,15 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         Log.d(TAG, "Starting service.");
         startService(intent);
         Log.d(TAG, "Registering receiver.");
-        registerReceiver(broadcastReceiver, new IntentFilter(GcmIntentService.BROADCAST_ACTION));
+        registerReceiver(broadcastReceiver, new IntentFilter(GcmIntentService.BROADCAST_ACTION)); // GcmIntentService.BROADCAST_ACTION
         Log.d(TAG, "Done resuming.");
     }
 
     @Override
     public void onPause() {
         super.onPause();
-//        unregisterReceiver(broadcastReceiver);
-//        stopService(intent);
+        unregisterReceiver(broadcastReceiver);
+        stopService(intent);
     }
 
     @Override
@@ -501,6 +517,47 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         //Set up expanded version of notification with full explanation
         NotificationCompat.BigTextStyle bigStyle = new NotificationCompat.BigTextStyle();
         bigStyle.bigText(getString(R.string.trapped_message_1) + deathCount + getString(R.string.trapped_message_2) + killersList.toString() + getString(R.string.trapped_message_3) + 50 * deathCount + getString(R.string.trapped_message_4));
+        mBuilder.setStyle(bigStyle);
+
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.notify(0, mBuilder.build());
+    }
+
+    /**
+     * Handles displaying a notification informing the user they they have trapped someone.
+     * Creates a system-level notification if one does not already exists, or updates an existing
+     * notification if it already exists. There can be only one notification from this app at a time.
+     * @param name The name of the user who set the trap that just trapped the user.
+     */
+    public void displayTrappedSomeone(String name){
+        //Add the new victim to the list and update the death count
+//        killers.add(name);
+//        ++deathCount;
+
+        //Create the long string listing all killers
+//        StringBuilder killersList = new StringBuilder();
+//        for (String killer : killers){
+//            if (killersList.length() > 0)
+//                killersList.append(", ");
+//            killersList.append(killer);
+//        }
+        //Set up the notification
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
+                .setSmallIcon(R.drawable.its_a_trap_icon)
+                .setContentTitle(getString(R.string.trapped_title))
+                .setContentText("You have trapped" + name);
+
+        //Set up the notification to take the user to this app on click
+        Intent resultIntent = new Intent(this, MapActivity.class);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        stackBuilder.addParentStack(MapActivity.class);
+        stackBuilder.addNextIntent(resultIntent);
+        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+        mBuilder.setContentIntent(resultPendingIntent);
+
+        //Set up expanded version of notification with full explanation
+        NotificationCompat.BigTextStyle bigStyle = new NotificationCompat.BigTextStyle();
+        bigStyle.bigText("You have trapped" + name);
         mBuilder.setStyle(bigStyle);
 
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);

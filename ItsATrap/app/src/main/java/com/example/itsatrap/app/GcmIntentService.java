@@ -21,6 +21,7 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 import android.app.IntentService;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -49,14 +50,14 @@ public class GcmIntentService extends IntentService {
 
     public static final String BROADCAST_ACTION = "com.example.itsatrap.app.receivepush";
     private final Handler handler = new Handler();
-//    Intent intent;
+    Intent intent;
 
-//    @Override
-//    public void onCreate() {
-//        super.onCreate();
-//
-////        intent = new Intent(BROADCAST_ACTION);
-//    }
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        intent = new Intent(BROADCAST_ACTION);
+    }
 //
 //    @Override
 //    public void onStart(Intent intent, int startId) {
@@ -83,9 +84,27 @@ public class GcmIntentService extends IntentService {
 //    }
 
     @Override
-    protected void onHandleIntent(Intent intent) {
-        Log.d(TAG, "handling intent.");
-        intent.setAction(BROADCAST_ACTION);
+    protected void onHandleIntent(Intent otherIntent) {
+        Log.d(TAG, "old intent to string: " + otherIntent.toString());
+        ComponentName comp = new ComponentName(com.example.itsatrap.app.MapActivity.PACKAGE_NAME,
+                com.example.itsatrap.app.MapActivity.class.getName());
+
+//        Log.d(TAG, "handling intent.");
+//        otherIntent.setAction(BROADCAST_ACTION);
+//        otherIntent.setComponent(comp);
+        Log.d(TAG, "intent action: " + otherIntent.getAction());
+        Log.d(TAG, "intent to string: " + otherIntent.toString());
+
+        Bundle otherBundle = otherIntent.getExtras();
+
+        try {
+            this.intent.putExtras(otherBundle);
+        } catch (NullPointerException e) {
+
+        }
+
+        Log.d(TAG, "intent to string: " + intent.toString());
+
         sendBroadcast(intent);
 //        Bundle extras = intent.getExtras();
 //        GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
