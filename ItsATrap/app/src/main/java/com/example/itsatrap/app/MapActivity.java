@@ -118,11 +118,14 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
                 // Do stuff if we need to refresh data
                 if (intent.getExtras().getString("message").equals("refreshdata")){
+                    Log.d(TAG + "PUSH", "push says to update location, so I'll do that.");
                     LatLng curLoc = getCurLatLng();
                     if (curLoc != null)
                         updateLocation(curLoc);
                 } else if (intent.getExtras().getString("message").equals("killed")){ // Tell someone they were killed by someone
+                    Log.d(TAG + "PUSH", "push says I killed someone, so we'll display a notification.");
                     String killed = intent.getExtras().getString("killed");
+                    if(killed.length() == 0) killed = "someone";
                     displayTrappedSomeone(killed);
                 }
 

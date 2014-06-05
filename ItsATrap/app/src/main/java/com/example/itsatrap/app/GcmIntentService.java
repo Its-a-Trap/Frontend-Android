@@ -85,14 +85,14 @@ public class GcmIntentService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent otherIntent) {
-        Log.d(TAG, "old intent to string: " + otherIntent.toString());
+//        Log.d(TAG, "old intent to string: " + otherIntent.toString());
         ComponentName comp = new ComponentName(com.example.itsatrap.app.MapActivity.PACKAGE_NAME,
                 com.example.itsatrap.app.MapActivity.class.getName());
 
 //        Log.d(TAG, "handling intent.");
 //        otherIntent.setAction(BROADCAST_ACTION);
 //        otherIntent.setComponent(comp);
-        Log.d(TAG, "intent action: " + otherIntent.getAction());
+//        Log.d(TAG, "intent action: " + otherIntent.getAction());
         Log.d(TAG, "intent to string: " + otherIntent.toString());
 
         Bundle otherBundle = otherIntent.getExtras();
