@@ -131,7 +131,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
                 Log.d(TAG + "PUSH", "Received push notification!!");
             } catch (NullPointerException e) {
-
+                Log.d(TAG+"PUSH", "null pointer exception");
+//                e.printStackTrace();
             }
             Log.d(TAG + "PUSH", "================== DONE WITH REQUEST ==================");
         }
@@ -547,8 +548,8 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
         //Set up the notification
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.its_a_trap_icon)
-                .setContentTitle(getString(R.string.trapped_title))
-                .setContentText("You have trapped" + name);
+                .setContentTitle("You have trapped someone!")
+                .setContentText("You have trapped " + name);
 
         //Set up the notification to take the user to this app on click
         Intent resultIntent = new Intent(this, MapActivity.class);
@@ -560,7 +561,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
 
         //Set up expanded version of notification with full explanation
         NotificationCompat.BigTextStyle bigStyle = new NotificationCompat.BigTextStyle();
-        bigStyle.bigText("You have trapped" + name);
+        bigStyle.bigText("You have trapped " + name);
         mBuilder.setStyle(bigStyle);
 
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -568,7 +569,7 @@ public class MapActivity extends Activity implements GoogleMap.OnMapClickListene
     }
 
     /**
-     * Runs the build in tutorial. Replaces the user data to something garuanteed to be useful, and
+     * Runs the build in tutorial. Replaces the user data to something guaranteed to be useful, and
      * steps through a series of showcase views designed to lead the user through the major elements
      * of the game.
      * As it goes through, it reassigns various listeners to progress the tutorial
